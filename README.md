@@ -36,9 +36,9 @@ v1.2
 ```
 <?php
 // for example
-echo $this->socket()->config('host'); // print 127.0.0.1 ?>
+echo $this->socket()->config('host'); // print 127.0.0.1
 ?>
-
+```
 v1.1.2
 - Console stdout>> while starting server
 
@@ -70,7 +70,7 @@ You're always can ask me for this module if you have write me [issue](https://gi
 4. Setup your Client-side script's to communicating with the server .. ws://host:port/websocket/open (main "Chat Application" controller) communicating as similarity
 
 #### How can i do the Application ?
-
+------------
 New application you can do according to the rules interface 
 `
 WebSockets\src\WebSockets\Aware\ApplicationInterface.php
@@ -79,8 +79,7 @@ As an example, you can see the implementation "Chat"
 `
 WebSockets\src\WebSockets\Application\Chat.php
 `
-
-
+------------
 In order to start using the module clone the repo in your vendor directory or add it as a submodule if you're already using git for your project:
 
     `
