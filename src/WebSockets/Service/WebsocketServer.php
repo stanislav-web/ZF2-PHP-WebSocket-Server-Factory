@@ -494,21 +494,12 @@ class WebsocketServer extends Console {
 	    $buffer = pack('n', (($fin | $opcode) << 8) | $payloadLength).$payloadLengthExtended.substr($message, $i * $bufferSize, $bufferLength);
 
 	    // send frame
+	    
 	    $socket = $this->clients[$clientId][0];
 
 	    $left = 2 + $payloadLengthExtendedLength + $bufferLength;
 
-	    do
-	    {
-		if(false === ($sent = @socket_send($socket, $buffer, $left, 0)))
-		{
-		    $this->console($this->__errorTpl("socket_send", socket_last_error(), self::$error->get(socket_last_error($socket))), true);
-		    return false;
-		}
-		$left -= $sent;
-		if($sent > 0) $buffer = substr($buffer, $sent);
-	    }
-	    while($left > 0);
+	    $this->__sendframe($socket, $buffer, $left);
 	}
 	return true;
     }
@@ -888,17 +879,7 @@ class WebsocketServer extends Console {
 
 	    //$this->console("Sending this response to the client {$clientId}:\r\n".$headers);
 	    $left = strlen($headers);
-	    do
-	    {
-		if(false === ($sent = @socket_send($socket, $headers, $left, 0)))
-		{
-		    $this->console($this->__errorTpl("socket_send", socket_last_error(), self::$error->get(socket_last_error($socket))), true);
-		    return false;
-		}
-		$left -= $sent;
-		if($sent > 0) $headers = substr($headers, $sent);
-	    }
-	    while($left > 0);
+	    $this->__sendframe($socket, $headers, $left);
 
 	    return true;
 	}
@@ -926,6 +907,30 @@ class WebsocketServer extends Console {
 	    }
 	}	
     }
+    
+    /**
+     * __sendframe($socket, $buffer, $len)	    send frame function
+     * @param resource #id $socket socket
+     * @param string $buffer message
+     * @param int $len message length
+     * @access private
+     * @return null
+     */
+    private function __sendframe($socket, $buffer, $len)
+    {
+	do
+	    {
+		if(false === ($sent = @socket_send($socket, $buffer, $len, 0)))
+		{
+		    $this->console($this->__errorTpl("socket_send", socket_last_error(), self::$error->get(socket_last_error($socket))), true);
+		    return false;
+		}
+		$len -= $sent;
+		if($sent > 0) $buffer = substr($buffer, $sent);
+	    }
+	while($len > 0);	
+    }    
+    
     
     /**
      * __errorTpl($fname, $errno, $errmsg) Error template
