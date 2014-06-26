@@ -350,7 +350,7 @@ class WebsocketServer extends Console {
 	if($this->clients[$client_id][2] == Frame::get('SERVER_READY_STATE_OPEN'))
 	{
 	    // handshake completed
-	    $result = $this->buildClientFrame($client_id, $buffer, $bufferLength);
+	    $result = $this->buildFrame($client_id, $buffer, $bufferLength);
 	}
 	elseif($this->clients[$client_id][2] == Frame::get('SERVER_READY_STATE_CONNECTING'))
 	{
@@ -441,6 +441,7 @@ class WebsocketServer extends Console {
      */
     public function dispatchMessage($clientId, $opcode, $message)
     {
+	$collect = [];
 	// check if client ready state is already closing or closed
 	if(!in_array($this->clients[$clientId][2], 
 	[
@@ -449,55 +450,57 @@ class WebsocketServer extends Console {
 	])) return true;
 
 	// fetch message length
-	$messageLength = strlen($message);
+	$collect['messageLength'] = strlen($message);
 
 	// set max payload length per frame
-	$bufferSize = 4096;
+	$collect['bufferSize']	= 4096;
 
 	// work out amount of frames to send, based on $bufferSize
-	$frameCount = ceil($messageLength / $bufferSize);
-	if($frameCount == 0) $frameCount = 1;
+	
+	$frameCount = ceil($collect['messageLength'] / $collect['bufferSize']);
+	$collect['frameCount']	= ($frameCount == 0) ? 1 : $frameCount;
 
 	// set last frame variables
-	$maxFrame = $frameCount - 1;
-	$lastFrameBufferLength = ($messageLength % $bufferSize) != 0 ? ($messageLength % $bufferSize) : ($messageLength != 0 ? $bufferSize : 0);
+	$collect['maxFrame']	=   $maxFrame;
+	$lastFrameBufferLength = ($collect['messageLength'] % $collect['bufferSize']) != 0 ? ($collect['messageLength'] % $collect['bufferSize']) : ($collect['messageLength'] != 0 ? $collect['bufferSize'] : 0);
 
 	// loop around all frames to send
-	for($i = 0; $i < $frameCount; $i++)
+	for($i = 0; $i < $collect['frameCount']; $i++)
 	{
 	    // fetch fin, opcode and buffer length for frame
-	    $fin = $i != $maxFrame ? 0 : Frame::get('SERVER_FIN');
+	    $fin = $i != $collect['maxFrame'] ? 0 : Frame::get('SERVER_FIN');
 	    $opcode = $i != 0 ? Frame::get('SERVER_OPCODE_CONTINUATION') : $opcode;
-	    $bufferLength = $i != $maxFrame ? $bufferSize : $lastFrameBufferLength;
+	    $collect['bufferLength'] = $i != $collect['maxFrame'] ? $collect['bufferSize'] : $lastFrameBufferLength;
 
 	    // set payload length variables for frame
-	    if($bufferLength <= 125)
+	    
+	    if($collect['bufferLength'] <= 125)
 	    {
-		$payloadLength = $bufferLength;
+		$payloadLength = $collect['bufferLength'];
 		$payloadLengthExtended = '';
 		$payloadLengthExtendedLength = 0;
 	    }
-	    elseif($bufferLength <= 65535)
+	    elseif($collect['bufferLength'] <= 65535)
 	    {
 		$payloadLength = Frame::get('SERVER_PAYLOAD_LENGTH_16');
-		$payloadLengthExtended = pack('n', $bufferLength);
+		$payloadLengthExtended = pack('n', $collect['bufferLength']);
 		$payloadLengthExtendedLength = 2;
 	    }
 	    else
 	    {
 		$payloadLength = Frame::get('SERVER_PAYLOAD_LENGTH_63');
-		$payloadLengthExtended = pack('xxxxN', $bufferLength); // pack 32 bit int, should really be 64 bit int
+		$payloadLengthExtended = pack('xxxxN', $collect['bufferLength']); // pack 32 bit int, should really be 64 bit int
 		$payloadLengthExtendedLength = 8;
 	    }
 
 	    // set frame bytes
-	    $buffer = pack('n', (($fin | $opcode) << 8) | $payloadLength).$payloadLengthExtended.substr($message, $i * $bufferSize, $bufferLength);
+	    $buffer = pack('n', (($fin | $opcode) << 8) | $payloadLength).$payloadLengthExtended.substr($message, $i * $collect['bufferSize'], $collect['bufferLength']);
 
 	    // send frame
 	    
 	    $socket = $this->clients[$clientId][0];
 
-	    $left = 2 + $payloadLengthExtendedLength + $bufferLength;
+	    $left = 2 + $payloadLengthExtendedLength + $collect['bufferLength'];
 
 	    $this->__sendframe($socket, $buffer, $left);
 	}
@@ -505,14 +508,14 @@ class WebsocketServer extends Console {
     }
     
     /**
-     * buildClientFrame($clientId, &$buffer, $bufferLength) create a frame to data transfering
+     * buildFrame($clientId, &$buffer, $bufferLength) create a frame to data transfering
      * @param int $clientId connection id
      * @param string $buffer request message
      * @param int $bufferLength request message length
      * @access public
      * @return boolean
      */
-    public function buildClientFrame($clientId, &$buffer, $bufferLength)
+    public function buildFrame($clientId, &$buffer, $bufferLength)
     {
 	// increase number of bytes read for the frame, and join buffer onto end of the frame buffer
 	$this->clients[$clientId][8] += $bufferLength;
@@ -547,7 +550,7 @@ class WebsocketServer extends Console {
 		if($nextFrameBytesLength <= 0 || !$result) return $result;
 
 		// build the next frame with the extra bytes
-		return $this->buildClientFrame($clientId, $nextFrameBytes, $nextFrameBytesLength);
+		return $this->buildFrame($clientId, $nextFrameBytes, $nextFrameBytesLength);
 	    }
 	}
 
@@ -650,7 +653,7 @@ class WebsocketServer extends Console {
     }
     
     /**
-     * processClientMessage($clientId, $opcode, &$data, $dataLength)
+     * processMessage($clientId, $opcode, &$data, $dataLength)
      * @param int $clientId  socket identifier from collection
      * @param int $opcode proccess code
      * @param string $data received text
@@ -658,7 +661,7 @@ class WebsocketServer extends Console {
      * @access public
      * @return boolean
      */
-    public function processClientMessage($clientId, $opcode, &$data, $dataLength)
+    public function processMessage($clientId, $opcode, &$data, $dataLength)
     {
 	// check opcodes
 	if($opcode == Frame::get('SERVER_OPCODE_PING'))
@@ -785,7 +788,7 @@ class WebsocketServer extends Console {
 	    if($opcode != Frame::get('SERVER_OPCODE_CONTINUATION'))
 	    {
 		// process the message
-		return $this->processClientMessage($clientId, $opcode, $data, $this->clients[$clientId][7]);
+		return $this->processMessage($clientId, $opcode, $data, $this->clients[$clientId][7]);
 	    }
 	    else
 	    {
@@ -796,7 +799,7 @@ class WebsocketServer extends Console {
 		$this->clients[$clientId][1] .= $data;
 
 		// process the message
-		$result = $this->processClientMessage($clientId, $this->clients[$clientId][10], $this->clients[$clientId][1], $this->clients[$clientId][11]);
+		$result = $this->processMessage($clientId, $this->clients[$clientId][10], $this->clients[$clientId][1], $this->clients[$clientId][11]);
 
 		// check if the client wasn't removed, then reset message buffer and message opcode
 		$this->__opcodereset($clientId, [1 => '',10 => 0, 11 => 0]);
