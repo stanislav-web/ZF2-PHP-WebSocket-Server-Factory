@@ -48,8 +48,6 @@ class Chat implements Aware\ApplicationInterface {
 	// get client ip
 	$ip = long2ip($this->_server->clients[$clientId][6]);
 
-	$this->_server->send($clientId, "$ip (#$clientId) has connected.");
-
 	// send a join notice to everyone but the person who joined
 	foreach($this->_server->clients as $id => $client)
 	{
@@ -104,9 +102,6 @@ class Chat implements Aware\ApplicationInterface {
 	// get client ip
 	$ip = long2ip($this->_server->clients[$clientId][6]);
 	
-	// send message to unpack
-	$this->_server->send($clientId, "$ip (#$clientId) has disconnected.");
-
 	// send a user left notice to everyone in the room
 	foreach($this->_server->clients as $id => $client)
 	{
