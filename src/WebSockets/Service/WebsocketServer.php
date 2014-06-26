@@ -677,8 +677,6 @@ class WebsocketServer extends Console {
 	elseif($opcode == Frame::get('SERVER_OPCODE_CLOSE'))
 	{
 	    // received close message
-	    if(substr($data, 1, 1) !== false)
-		    $array = unpack('na', substr($data, 0, 2));
 
 	    if($this->clients[$clientId][2] == Frame::get('SERVER_READY_STATE_CLOSING'))
 	    {
