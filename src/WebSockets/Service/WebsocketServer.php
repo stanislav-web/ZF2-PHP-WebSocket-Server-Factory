@@ -44,7 +44,7 @@ class WebsocketServer extends Console {
     /**
      * $_logger Log object
      * @access protected
-     * @var  Zend\Log\Logger $_logger
+     * @var object \Zend\Log\Logger $_logger
      */
     protected $_logger = null;
 
