@@ -299,7 +299,7 @@ class WebsocketServer extends Console {
 		    {
 			// client ready state is open or closing
 			$this->clients[$clientId][4] = time();
-			$this->sendClientMessage($clientId, Frame::get('SERVER_OPCODE_PING'), '');
+			$this->dispatchMessage($clientId, Frame::get('SERVER_OPCODE_PING'), '');
 		    }
 		    else
 		    {
@@ -432,18 +432,21 @@ class WebsocketServer extends Console {
     }
 
     /**
-     * sendClientMessage($clientId, $opcode, $message) write and encrypt the message
+     * dispatchMessage($clientId, $opcode, $message) write and encrypt the message
      * @param int $clientId socket identifier
      * @param int $opcode response code
      * @param string $message text
      * @access public
      * @return boolean
      */
-    public function sendClientMessage($clientId, $opcode, $message)
+    public function dispatchMessage($clientId, $opcode, $message)
     {
 	// check if client ready state is already closing or closed
-	if($this->clients[$clientId][2] == Frame::get('SERVER_READY_STATE_CLOSING') 
-		|| $this->clients[$clientId][2] == Frame::get('SERVER_READY_STATE_CLOSED')) return true;
+	if(!in_array($this->clients[$clientId][2], 
+	[
+	    Frame::get('SERVER_READY_STATE_CLOSING'),
+	    Frame::get('SERVER_READY_STATE_CLOSED')
+	])) return true;
 
 	// fetch message length
 	$messageLength = strlen($message);
@@ -544,7 +547,7 @@ class WebsocketServer extends Console {
 		}
 
 		// process the frame
-		$result = $this->processClientFrame($clientId);
+		$result = $this->processFrame($clientId);
 
 		// check if the client wasn't removed, then reset frame data
 		$this->__opcodereset($clientId, [7 => false,8 => 0, 9 => '']);
@@ -670,7 +673,7 @@ class WebsocketServer extends Console {
 	if($opcode == Frame::get('SERVER_OPCODE_PING'))
 	{
 	    // received ping message
-	    return $this->sendClientMessage($clientId, Frame::get('SERVER_OPCODE_PONG'), $data);
+	    return $this->dispatchMessage($clientId, Frame::get('SERVER_OPCODE_PONG'), $data);
 	}
 	elseif($opcode == Frame::get('SERVER_OPCODE_PONG'))
 	{
@@ -721,12 +724,12 @@ class WebsocketServer extends Console {
     }
     
     /**
-     * processClientFrame($clientId) transfering frame
+     * processFrame($clientId) transfering frame
      * @param int $clientId connection id
      * @access public
      * @return boolean
      */
-    public function processClientFrame($clientId)
+    public function processFrame($clientId)
     {
 	// store the time that data was last received from the client
 	$this->clients[$clientId][3] = time();
@@ -993,7 +996,7 @@ class WebsocketServer extends Console {
 	if($message)
 	{
 	    $this->_callback->say($message);
-	    return $this->sendClientMessage($client_id, $binary ? Frame::get('SERVER_OPCODE_BINARY') : Frame::get('SERVER_OPCODE_TEXT'), $message);
+	    return $this->dispatchMessage($client_id, $binary ? Frame::get('SERVER_OPCODE_BINARY') : Frame::get('SERVER_OPCODE_TEXT'), $message);
 	}
     }
     /**
@@ -1014,7 +1017,7 @@ class WebsocketServer extends Console {
 
 	// send close frame to client
 	$status = $status !== false ? pack('n', $status) : '';
-	$this->sendClientMessage($clientId, Frame::get('SERVER_OPCODE_CLOSE'), $status);
+	$this->dispatchMessage($clientId, Frame::get('SERVER_OPCODE_CLOSE'), $status);
 
 	// set client ready state to closing
 	$this->clients[$clientId][2] = Frame::get('SERVER_READY_STATE_CLOSING');
