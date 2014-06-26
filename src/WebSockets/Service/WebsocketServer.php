@@ -124,41 +124,9 @@ class WebsocketServer extends Console {
 	}
 
 	$this->console("Running server...");
-
-	if(isset($this->_read[0]))
-	{
-	    $this->console("Failed. Server gone away ((");
-	    return false;
-	}
-
-	// open TCP / IP stream and hang port specified in the config
-	if(!$this->_read[0] = socket_create(AF_INET, SOCK_STREAM, SOL_TCP))
-	{
-	    $this->console($this->__errorTpl("socket_create", socket_last_error(), self::$error->get(socket_last_error())), true);
-	    return false;
-	}
-
-	// setup connected socket
-	if(!socket_set_option($this->_read[0], SOL_SOCKET, SO_REUSEADDR, 1))
-	{
-	    $this->console($this->__errorTpl("socket_set_option", socket_last_error(), self::$error->get(socket_last_error($this->_read[0]))), true);
-	    socket_close($this->_read[0]);
-	    return false;
-	}
-
-	//bind socket to specified host
-	if(false == (socket_bind($this->_read[0], $this->config['host'], $this->config['port'])))
-	{
-	    $this->console($this->__errorTpl("socket_bind", socket_last_error(), self::$error->get(socket_last_error($this->_read[0]))), true);
-	    $this->shutdown();
-	}
-
-	//bind socket to specified host
-	if(false == (socket_listen($this->_read[0], $this->config['max_clients'])))
-	{
-	    $this->console($this->__errorTpl("socket_listen", socket_last_error(), self::$error->get(socket_last_error($this->_read[0]))), true);
-	    $this->shutdown();
-	}
+	
+	// connect and listen primary socket
+	$this->__socketListener();
 
 	// throw console log (if enable)
 	$this->console(sprintf("Listening on: %s:%d", $this->config['host'], $this->config['port']));
@@ -967,6 +935,49 @@ class WebsocketServer extends Console {
     private function __errorTpl($fname, $errno, $errmsg)
     {
 	return sprintf("(%s) Error [%d]: %s", $fname, $errno, $errmsg);
+    }
+    
+    /**
+     * __socketListener() read primary socket
+     * @access private
+     * @return boolean
+     */
+    private function __socketListener()
+    {
+	if(isset($this->_read[0]))
+	{
+	    $this->console("Failed. Server gone away ((");
+	    return false;
+	}
+
+	// open TCP / IP stream and hang port specified in the config
+	if(!$this->_read[0] = socket_create(AF_INET, SOCK_STREAM, SOL_TCP))
+	{
+	    $this->console($this->__errorTpl("socket_create", socket_last_error(), self::$error->get(socket_last_error())), true);
+	    return false;
+	}
+
+	// setup connected socket
+	if(!socket_set_option($this->_read[0], SOL_SOCKET, SO_REUSEADDR, 1))
+	{
+	    $this->console($this->__errorTpl("socket_set_option", socket_last_error(), self::$error->get(socket_last_error($this->_read[0]))), true);
+	    socket_close($this->_read[0]);
+	    return false;
+	}
+
+	//bind socket to specified host
+	if(false === (socket_bind($this->_read[0], $this->config['host'], $this->config['port'])))
+	{
+	    $this->console($this->__errorTpl("socket_bind", socket_last_error(), self::$error->get(socket_last_error($this->_read[0]))), true);
+	    $this->shutdown();
+	}
+
+	//bind socket to specified host
+	if(false === (socket_listen($this->_read[0], $this->config['max_clients'])))
+	{
+	    $this->console($this->__errorTpl("socket_listen", socket_last_error(), self::$error->get(socket_last_error($this->_read[0]))), true);
+	    $this->shutdown();
+	}	
     }
     
     /**
