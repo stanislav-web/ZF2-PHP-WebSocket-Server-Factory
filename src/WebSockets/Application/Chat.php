@@ -76,10 +76,11 @@ class Chat implements Aware\ApplicationInterface {
 	{
 	    // send nothing
 	    $this->_server->close($clientId);
+	    return;
 	}
 
 	// the speaker is the only person in the room. Don't let them feel lonely.
-	if (sizeof($this->_server->clients) == 1) 
+	if(sizeof($this->_server->clients) == 1) 
 	{
 	    $this->_server->send($clientId, "There isn't anyone else in the room, but I'll still listen to you. Some one in the dark :))");
 	}

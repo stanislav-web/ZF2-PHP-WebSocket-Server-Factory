@@ -44,7 +44,7 @@ class WebsocketServer extends Console {
     /**
      * $_logger Log object
      * @access protected
-     * @var object \Zend\Log\Logger $_logger
+     * @var  Zend\Log\Logger $_logger
      */
     protected $_logger = null;
 
@@ -134,14 +134,14 @@ class WebsocketServer extends Console {
 	// open TCP / IP stream and hang port specified in the config
 	if(!$this->_read[0] = socket_create(AF_INET, SOCK_STREAM, SOL_TCP))
 	{
-	    $this->console("(socket_create) Error [".socket_last_error()."]: ".self::$error->get(socket_last_error()), true);
+	    $this->console($this->__errorTpl("socket_create", socket_last_error(), self::$error->get(socket_last_error())), true);
 	    return false;
 	}
 
 	// setup connected socket
 	if(!socket_set_option($this->_read[0], SOL_SOCKET, SO_REUSEADDR, 1))
 	{
-	    $this->console("(socket_set_option) Error [".socket_last_error()."]: ".self::$error->get(socket_last_error($this->_read[0])), true);
+	    $this->console($this->__errorTpl("socket_set_option", socket_last_error(), self::$error->get(socket_last_error($this->_read[0]))), true);
 	    socket_close($this->_read[0]);
 	    return false;
 	}
@@ -149,14 +149,14 @@ class WebsocketServer extends Console {
 	//bind socket to specified host
 	if(false == (socket_bind($this->_read[0], $this->config['host'], $this->config['port'])))
 	{
-	    $this->console("(socket_bind) Error [".socket_last_error()."]: ".self::$error->get(socket_last_error($this->_read[0])), true);
+	    $this->console($this->__errorTpl("socket_bind", socket_last_error(), self::$error->get(socket_last_error($this->_read[0]))), true);
 	    $this->shutdown();
 	}
 
 	//bind socket to specified host
 	if(false == (socket_listen($this->_read[0], $this->config['max_clients'])))
 	{
-	    $this->console("(socket_listen) Error [".socket_last_error()."]: ".self::$error->get(socket_last_error($this->_read[0])), true);
+	    $this->console($this->__errorTpl("socket_listen", socket_last_error(), self::$error->get(socket_last_error($this->_read[0]))), true);
 	    $this->shutdown();
 	}
 
@@ -184,7 +184,7 @@ class WebsocketServer extends Console {
 	    $changed = $this->_read;
 	    if(false === ($result = socket_select($changed, $write, $except, 1)))
 	    {
-		$this->console("(socket_select) Error [".socket_last_error()."]: ".self::$error->get(socket_last_error($this->_read[0])), true);
+		$this->console($this->__errorTpl("socket_select", socket_last_error(), self::$error->get(socket_last_error($this->_read[0]))), true);
 		socket_close($this->_read[0]);
 		return false;
 	    }
@@ -221,7 +221,7 @@ class WebsocketServer extends Console {
 			// listening changed socket
 			if(false === ($client = socket_accept($this->_read[0])))
 			{
-			    $this->console("(socket_accept) Error [".socket_last_error()."]: ".self::$error->get(socket_last_error($this->_read[0])), true);
+			    $this->console($this->__errorTpl("socket_accept", socket_last_error(), self::$error->get(socket_last_error($this->_read[0]))), true);
 			    socket_close($this->_read[0]);
 			    return false;
 			}
@@ -531,7 +531,7 @@ class WebsocketServer extends Console {
 	    {
 		if(false === ($sent = @socket_send($socket, $buffer, $left, 0)))
 		{
-		    $this->console("Error [".socket_last_error()."]: ".self::$error->get(socket_last_error($socket)));
+		    $this->console($this->__errorTpl("socket_send", socket_last_error(), self::$error->get(socket_last_error($socket))), true);
 		    return false;
 		}
 		$left -= $sent;
@@ -579,7 +579,7 @@ class WebsocketServer extends Console {
 		$result = $this->processClientFrame($clientId);
 
 		// check if the client wasn't removed, then reset frame data
-		$this->__opcodereset($clientId);
+		$this->__opcodereset($clientId, [7 => false,8 => 0, 9 => '']);
 
 		// if there's no extra bytes for the next frame, or processing the frame failed, return the result of processing the frame
 		if($nextFrameBytesLength <= 0 || !$result) return $result;
@@ -837,7 +837,7 @@ class WebsocketServer extends Console {
 		$result = $this->processClientMessage($clientId, $this->clients[$clientId][10], $this->clients[$clientId][1], $this->clients[$clientId][11]);
 
 		// check if the client wasn't removed, then reset message buffer and message opcode
-		$this->__opcodereset($clientId);
+		$this->__opcodereset($clientId, [1 => '',10 => 0, 11 => 0]);
 		return $result;
 	    }
 	}
@@ -921,7 +921,7 @@ class WebsocketServer extends Console {
 	    {
 		if(false === ($sent = @socket_send($socket, $headers, $left, 0)))
 		{
-		    $this->console("Error [".socket_last_error()."]: ".self::$error->get(socket_last_error($socket)));
+		    $this->console($this->__errorTpl("socket_send", socket_last_error(), self::$error->get(socket_last_error($socket))), true);
 		    return false;
 		}
 		$left -= $sent;
@@ -944,14 +944,29 @@ class WebsocketServer extends Console {
      * @access private
      * @return null
      */
-    private function __opcodereset($clientId)
+    private function __opcodereset($clientId, array $keys)
     {
 	if(isset($this->clients[$clientId]))
 	{
-	    $this->clients[$clientId][1] = '';
-	    $this->clients[$clientId][10] = 0;
-	    $this->clients[$clientId][11] = 0;
+	    // reset by keys
+	    foreach($keys as $k => $v)
+	    {
+		$this->clients[$clientId][$k]	= $v;
+	    }
 	}	
+    }
+    
+    /**
+     * __errorTpl($fname, $errno, $errmsg) Error template
+     * @param string $fname funtion name
+     * @param int $errno error number
+     * @param string $errmsg error message
+     * @access private
+     * @return string
+     */
+    private function __errorTpl($fname, $errno, $errmsg)
+    {
+	return sprintf("(%s) Error [%d]: %s", $fname, $errno, $errmsg);
     }
     
     /**
@@ -1053,7 +1068,7 @@ class WebsocketServer extends Console {
 		    echo $text;
 		}
 	    }
-	    if($exit) die();
+	    if($exit) $this->shutdown();
 	}
     }
 }

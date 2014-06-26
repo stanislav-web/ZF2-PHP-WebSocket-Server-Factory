@@ -45,10 +45,6 @@ class Socket extends AbstractHelper implements ServiceLocatorAwareInterface {
     {  
         return $this->sm;  
     }     
-
-    public function __invoke() {
-	return $this;
-    }    
     
     /**
      * config($key) get confuration module param
