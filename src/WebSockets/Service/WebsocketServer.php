@@ -167,7 +167,7 @@ class WebsocketServer extends Console {
 			if(false === ($bytes = socket_recv($socket, $buffer, 4096, 0)))
 			{
 			    // error on recv, remove client socket (will check to send close frame)
-			    $this->close($clientId, Frame::SERVER_STATUS_PROTOCOL_ERROR);
+			    $this->close($clientId, Frame::get('SERVER_STATUS_PROTOCOL_ERROR'));
 			}
 			elseif($bytes > 0)
 			{
@@ -175,7 +175,7 @@ class WebsocketServer extends Console {
 			    if(!$this->processClient($clientId, $buffer, $bytes))
 			    {
 				// closing again. Some error from event or wron response code
-				$this->close($clientId, Frame::SERVER_STATUS_PROTOCOL_ERROR);
+				$this->close($clientId, Frame::get('SERVER_STATUS_PROTOCOL_ERROR'));
 			    }
 			}
 			else
@@ -237,9 +237,9 @@ class WebsocketServer extends Console {
 	foreach($this->clients as $clientId => $client)
 	{
 	    // if the client's opening handshake is complete, tell the client the server is 'going away'
-	    if($client[2] != Frame::SERVER_READY_STATE_CONNECTING)
+	    if($client[2] != Frame::get('SERVER_READY_STATE_CONNECTING'))
 	    { 
-		$this->close($clientId, Frame::SERVER_STATUS_GONE_AWAY);
+		$this->close($clientId, Frame::get('SERVER_STATUS_GONE_AWAY'));
 	    }
 	    $this->console("Destroy ".$client[0]);
 
@@ -279,7 +279,7 @@ class WebsocketServer extends Console {
 	$time = time();
 	foreach($this->clients as $clientId => $client)
 	{
-	    if($client[2] != Frame::SERVER_READY_STATE_CLOSED)
+	    if($client[2] != Frame::get('SERVER_READY_STATE_CLOSED'))
 	    {
 		// client ready state is not closed
 		if($client[4] !== false)
@@ -288,18 +288,18 @@ class WebsocketServer extends Console {
 		    if($time >= $client[4] + $this->config['timeout_pong'])
 		    {
 			// client didn't respond to the server's ping request in $this->config['timeout_pong'] seconds
-			$this->close($clientId, Frame::SERVER_STATUS_TIMEOUT);
+			$this->close($clientId, Frame::get('SERVER_STATUS_TIMEOUT'));
 			$this->removeClient($clientId);
 		    }
 		}
 		elseif($time >= $client[3] + $this->config['timeout_recv'])
 		{
 		    // last data was received >= $this->config['timeout_recv'] seconds ago
-		    if($client[2] != Frame::SERVER_READY_STATE_CONNECTING)
+		    if($client[2] != Frame::get('SERVER_READY_STATE_CONNECTING'))
 		    {
 			// client ready state is open or closing
 			$this->clients[$clientId][4] = time();
-			$this->sendClientMessage($clientId, Frame::SERVER_OPCODE_PING, '');
+			$this->sendClientMessage($clientId, Frame::get('SERVER_OPCODE_PING'), '');
 		    }
 		    else
 		    {
@@ -331,7 +331,7 @@ class WebsocketServer extends Console {
 	$clientId = $this->nextClientId();
 
 	// store initial client data
-	$this->clients[$clientId] = [$socket, '', Frame::SERVER_READY_STATE_CONNECTING, time(), false, 0, $clientIp, false, 0, '', 0, 0];
+	$this->clients[$clientId] = [$socket, '', Frame::get('SERVER_READY_STATE_CONNECTING'), time(), false, 0, $clientIp, false, 0, '', 0, 0];
 
 	// store socket - used for socket_select()
 	$this->_read[$clientId] = $socket;
@@ -347,18 +347,18 @@ class WebsocketServer extends Console {
      */
     public function processClient($client_id, &$buffer, $bufferLength)
     {
-	if($this->clients[$client_id][2] == Frame::SERVER_READY_STATE_OPEN)
+	if($this->clients[$client_id][2] == Frame::get('SERVER_READY_STATE_OPEN'))
 	{
 	    // handshake completed
 	    $result = $this->buildClientFrame($client_id, $buffer, $bufferLength);
 	}
-	elseif($this->clients[$client_id][2] == Frame::SERVER_READY_STATE_CONNECTING)
+	elseif($this->clients[$client_id][2] == Frame::get('SERVER_READY_STATE_CONNECTING'))
 	{
 	    // handshake not completed
 	    $result = $this->processClientHandshake($client_id, $buffer);
 	    if($result)
 	    {
-		$this->clients[$client_id][2] = Frame::SERVER_READY_STATE_OPEN;
+		$this->clients[$client_id][2] = Frame::get('SERVER_READY_STATE_OPEN');
 
 		if(array_key_exists('open', $this->_onEvents))
 		{
@@ -442,8 +442,8 @@ class WebsocketServer extends Console {
     public function sendClientMessage($clientId, $opcode, $message)
     {
 	// check if client ready state is already closing or closed
-	if($this->clients[$clientId][2] == Frame::SERVER_READY_STATE_CLOSING 
-		|| $this->clients[$clientId][2] == Frame::SERVER_READY_STATE_CLOSED) return true;
+	if($this->clients[$clientId][2] == Frame::get('SERVER_READY_STATE_CLOSING') 
+		|| $this->clients[$clientId][2] == Frame::get('SERVER_READY_STATE_CLOSED')) return true;
 
 	// fetch message length
 	$messageLength = strlen($message);
@@ -463,8 +463,8 @@ class WebsocketServer extends Console {
 	for($i = 0; $i < $frameCount; $i++)
 	{
 	    // fetch fin, opcode and buffer length for frame
-	    $fin = $i != $maxFrame ? 0 : Frame::SERVER_FIN;
-	    $opcode = $i != 0 ? Frame::SERVER_OPCODE_CONTINUATION : $opcode;
+	    $fin = $i != $maxFrame ? 0 : Frame::get('SERVER_FIN');
+	    $opcode = $i != 0 ? Frame::get('SERVER_OPCODE_CONTINUATION') : $opcode;
 	    $bufferLength = $i != $maxFrame ? $bufferSize : $lastFrameBufferLength;
 
 	    // set payload length variables for frame
@@ -476,13 +476,13 @@ class WebsocketServer extends Console {
 	    }
 	    elseif($bufferLength <= 65535)
 	    {
-		$payloadLength = Frame::SERVER_PAYLOAD_LENGTH_16;
+		$payloadLength = Frame::get('SERVER_PAYLOAD_LENGTH_16');
 		$payloadLengthExtended = pack('n', $bufferLength);
 		$payloadLengthExtendedLength = 2;
 	    }
 	    else
 	    {
-		$payloadLength = Frame::SERVER_PAYLOAD_LENGTH_63;
+		$payloadLength = Frame::get('SERVER_PAYLOAD_LENGTH_63');
 		$payloadLengthExtended = pack('xxxxN', $bufferLength); // pack 32 bit int, should really be 64 bit int
 		$payloadLengthExtendedLength = 8;
 	    }
@@ -604,7 +604,7 @@ class WebsocketServer extends Console {
 		    $array = unpack('Na', $payloadLengthExtended32_1);
 		    if($array['a'] != 0 || ord(substr($payloadLengthExtended, 4, 1)) & 128)
 		    {
-			$this->close($clientId, Frame::SERVER_STATUS_MESSAGE_TOO_BIG);
+			$this->close($clientId, Frame::get('SERVER_STATUS_MESSAGE_TOO_BIG'));
 			return false;
 		    }
 
@@ -616,7 +616,7 @@ class WebsocketServer extends Console {
 		    // 14 for header size, 4095 for last recv() next frame bytes
 		    if($array['a'] > 2147479538)
 		    {
-			$this->close($clientId, Frame::SERVER_STATUS_MESSAGE_TOO_BIG);
+			$this->close($clientId, Frame::get('SERVER_STATUS_MESSAGE_TOO_BIG'));
 			return false;
 		    }
 
@@ -629,15 +629,15 @@ class WebsocketServer extends Console {
 	    if($this->clients[$clientId][7] !== false)
 	    {
 
-		// check if the frame's payload data length exceeds Frame::WS_MAX_FRAME_PAYLOAD_RECV
+		// check if the frame's payload data length exceeds Frame::get('WS_MAX_FRAME_PAYLOAD_RECV')
 		if($this->clients[$clientId][7] > $this->config['max_frame_payload_recv'])
 		{
 		    $this->clients[$clientId][7] = false;
-		    $this->close($clientId, Frame::SERVER_STATUS_MESSAGE_TOO_BIG);
+		    $this->close($clientId, Frame::get('SERVER_STATUS_MESSAGE_TOO_BIG'));
 		    return false;
 		}
 
-		// check if the message's payload data length exceeds 2,147,483,647 or Frame::WS_MAX_MESSAGE_PAYLOAD_RECV
+		// check if the message's payload data length exceeds 2,147,483,647 or Frame::get('WS_MAX_MESSAGE_PAYLOAD_RECV')
 		// doesn't apply for control frames, where the payload data is not internally stored
 		$controlFrame = (ord(substr($this->clients[$clientId][9], 0, 1)) & 8) == 8;
 		if(!$controlFrame)
@@ -645,7 +645,7 @@ class WebsocketServer extends Console {
 		    $newMessagePayloadLength = $this->clients[$clientId][11] + $this->clients[$clientId][7];
 		    if($newMessagePayloadLength > $this->config['max_message_payload_recv'] || $newMessagePayloadLength > 2147483647)
 		    {
-			$this->close($clientId, Frame::SERVER_STATUS_MESSAGE_TOO_BIG);
+			$this->close($clientId, Frame::get('SERVER_STATUS_MESSAGE_TOO_BIG'));
 			return false;
 		    }
 		}
@@ -667,17 +667,17 @@ class WebsocketServer extends Console {
     public function processClientMessage($clientId, $opcode, &$data, $dataLength)
     {
 	// check opcodes
-	if($opcode == Frame::SERVER_OPCODE_PING)
+	if($opcode == Frame::get('SERVER_OPCODE_PING'))
 	{
 	    // received ping message
-	    return $this->sendClientMessage($clientId, Frame::SERVER_OPCODE_PONG, $data);
+	    return $this->sendClientMessage($clientId, Frame::get('SERVER_OPCODE_PONG'), $data);
 	}
-	elseif($opcode == Frame::SERVER_OPCODE_PONG)
+	elseif($opcode == Frame::get('SERVER_OPCODE_PONG'))
 	{
 	    // received pong message (it's valid if the server did not send a ping request for this pong message)
 	    if($this->clients[$clientId][4] !== false) $this->clients[$clientId][4] = false;
 	}
-	elseif($opcode == Frame::SERVER_OPCODE_CLOSE)
+	elseif($opcode == Frame::get('SERVER_OPCODE_CLOSE'))
 	{
 	    // received close message
 	    if(substr($data, 1, 1) !== false)
@@ -687,20 +687,20 @@ class WebsocketServer extends Console {
 	    }
 	    else $status = false;
 
-	    if($this->clients[$clientId][2] == Frame::SERVER_READY_STATE_CLOSING)
+	    if($this->clients[$clientId][2] == Frame::get('SERVER_READY_STATE_CLOSING'))
 	    {
 		// the server already sent a close frame to the client, this is the client's close frame reply
 		// (no need to send another close frame to the client)
-		$this->clients[$clientId][2] = Frame::SERVER_READY_STATE_CLOSED;
+		$this->clients[$clientId][2] = Frame::get('SERVER_READY_STATE_CLOSED');
 	    }
 	    else
 	    {
 		// the server has not already sent a close frame to the client, send one now
-		$this->close($clientId, Frame::SERVER_STATUS_NORMAL_CLOSE);
+		$this->close($clientId, Frame::get('SERVER_STATUS_NORMAL_CLOSE'));
 	    }
 	    $this->removeClient($clientId);
 	}
-	elseif($opcode == Frame::SERVER_OPCODE_TEXT || $opcode == Frame::SERVER_OPCODE_BINARY)
+	elseif($opcode == Frame::get('SERVER_OPCODE_TEXT') || $opcode == Frame::get('SERVER_OPCODE_BINARY'))
 	{
 	    if(array_key_exists('message', $this->_onEvents)) 
 	    {
@@ -741,10 +741,10 @@ class WebsocketServer extends Console {
 	$octet0 = ord(substr($buffer, 0, 1));
 	$octet1 = ord(substr($buffer, 1, 1));
 
-	$fin = $octet0 & Frame::SERVER_FIN;
+	$fin = $octet0 & Frame::get('SERVER_FIN');
 	$opcode = $octet0 & 15;
 
-	$mask = $octet1 & Frame::SERVER_MASK;
+	$mask = $octet1 & Frame::get('SERVER_MASK');
 	if(!$mask) return false; // close socket, as no mask bit was sent from the client
 
 	    
@@ -777,7 +777,7 @@ class WebsocketServer extends Console {
 	else $data = '';
 
 	// check if this is not a continuation frame and if there is already data in the message buffer
-	if($opcode != Frame::SERVER_OPCODE_CONTINUATION && $this->clients[$clientId][11] > 0)
+	if($opcode != Frame::get('SERVER_OPCODE_CONTINUATION') && $this->clients[$clientId][11] > 0)
 	{
 	    // clear the message buffer
 	    $this->clients[$clientId][11] = 0;
@@ -785,10 +785,10 @@ class WebsocketServer extends Console {
 	}
 
 	// check if the frame is marked as the final frame in the message
-	if($fin == Frame::SERVER_FIN)
+	if($fin == Frame::get('SERVER_FIN'))
 	{
 	    // check if this is the first frame in the message
-	    if($opcode != Frame::SERVER_OPCODE_CONTINUATION)
+	    if($opcode != Frame::get('SERVER_OPCODE_CONTINUATION'))
 	    {
 		// process the message
 		return $this->processClientMessage($clientId, $opcode, $data, $this->clients[$clientId][7]);
@@ -821,7 +821,7 @@ class WebsocketServer extends Console {
 	    $this->clients[$clientId][1] .= $data;
 
 	    // if this is the first frame in the message, store the opcode
-	    if($opcode != Frame::SERVER_OPCODE_CONTINUATION)
+	    if($opcode != Frame::get('SERVER_OPCODE_CONTINUATION'))
 	    {
 		$this->clients[$clientId][10] = $opcode;
 	    }
@@ -993,7 +993,7 @@ class WebsocketServer extends Console {
 	if($message)
 	{
 	    $this->_callback->say($message);
-	    return $this->sendClientMessage($client_id, $binary ? Frame::SERVER_OPCODE_BINARY : Frame::SERVER_OPCODE_TEXT, $message);
+	    return $this->sendClientMessage($client_id, $binary ? Frame::get('SERVER_OPCODE_BINARY') : Frame::get('SERVER_OPCODE_TEXT'), $message);
 	}
     }
     /**
@@ -1007,17 +1007,17 @@ class WebsocketServer extends Console {
     public function close($clientId, $status = false)
     {
 	// check if client ready state is already closing or closed
-	if($this->clients[$clientId][2] == Frame::SERVER_READY_STATE_CLOSING || $this->clients[$clientId][2] == Frame::SERVER_READY_STATE_CLOSED) return true;
+	if($this->clients[$clientId][2] == Frame::get('SERVER_READY_STATE_CLOSING') || $this->clients[$clientId][2] == Frame::get('SERVER_READY_STATE_CLOSED')) return true;
 
 	// store close status
 	$this->clients[$clientId][5] = $status;
 
 	// send close frame to client
 	$status = $status !== false ? pack('n', $status) : '';
-	$this->sendClientMessage($clientId, Frame::SERVER_OPCODE_CLOSE, $status);
+	$this->sendClientMessage($clientId, Frame::get('SERVER_OPCODE_CLOSE'), $status);
 
 	// set client ready state to closing
-	$this->clients[$clientId][2] = Frame::SERVER_READY_STATE_CLOSING;
+	$this->clients[$clientId][2] = Frame::get('SERVER_READY_STATE_CLOSING');
     }    
 
     /**
