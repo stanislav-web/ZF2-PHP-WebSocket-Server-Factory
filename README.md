@@ -72,13 +72,13 @@ You're always can ask me for this module if you have write me [issue](https://gi
 #### How can i do the Application ?
 ------------
 New application you can do according to the rules interface 
-`
+```
 WebSockets\src\WebSockets\Aware\ApplicationInterface.php
-` 
+``` 
 As an example, you can see the implementation "Chat" 
-`
+```
 WebSockets\src\WebSockets\Application\Chat.php
-`
+```
 ------------
 In order to start using the module clone the repo in your vendor directory or add it as a submodule if you're already using git for your project:
 
