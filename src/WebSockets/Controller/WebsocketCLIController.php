@@ -85,10 +85,9 @@ class WebsocketCLIController extends AbstractActionController
             $option     = $request->getParam('option', false);
             $verbose    = ($request->getParam('verbose')) ? $request->getParam('verbose') : $request->getParam('v');
             
-            if($verbose) echo 'Command execute: '.$option.PHP_EOL;
+            if($verbose != false) echo 'Command execute: '.$option.PHP_EOL;
             $option = preg_replace('#"#', '', $option);
-            
-            system($option, $val);
+            if(is_string($option)) system($option, $val);
         }
         catch(Exception\ExceptionStrategy $e) 
         {

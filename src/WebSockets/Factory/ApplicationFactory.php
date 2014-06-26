@@ -21,13 +21,6 @@ use WebSockets\Exception,
 class ApplicationFactory implements FactoryInterface, ServiceLocatorAwareInterface {
 
     /**
-     * $__apllication may be able from the \Websockets\Client
-     * @access private
-     * @var array 
-     */
-    private $__application = null;
-
-    /**
      * $__serviceLocator Service Locator for create implemented object
      * @access private
      * @var object 
@@ -77,15 +70,11 @@ class ApplicationFactory implements FactoryInterface, ServiceLocatorAwareInterfa
     {
         // need to provide dynamic objects creations 
         
-        if(null === $this->__application) 
-        {
-            $Client = "\\WebSockets\\Application\\$app";
-            // checking class..
-            if(!class_exists($Client)) throw new Exception\ExceptionStrategy($app.' application does not exist');
+	$Client = "\\WebSockets\\Application\\$app";
+	// checking class..
+        if(!class_exists($Client)) throw new Exception\ExceptionStrategy($app.' application does not exist');
 	    
-	    $config = $this->getServiceLocator()->get('Config');
-            $this->__application    =  new $Client(new WebsocketServer($config['websockets']['server']));
-        }
-        return $this->__application;
+	$config = $this->getServiceLocator()->get('Config');
+        return new $Client(new WebsocketServer($config['websockets']['server']));
     }
 }

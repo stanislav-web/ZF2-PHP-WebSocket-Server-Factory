@@ -4,7 +4,6 @@ namespace WebSockets\Service; // Namespaces of current service
 use WebSockets\Status\WebSocketFrameCode as Frame,
     WebSockets\Exception,
     Zend\Debug\Debug,
-    Zend\Log\Logger,
     Zend\Console\Console;
 
 /**
@@ -119,7 +118,7 @@ class WebsocketServer extends Console {
 	    {
 		if(!file_exists($this->config['logfile'])) throw new Exception\ExceptionStrategy("Error! File {$this->config['logfile']} does not exist");
 		$this->__log = true;
-		$this->_logger = new Logger();
+		$this->_logger = new \Zend\Log\Logger();
 		$this->_logger->addWriter(new \Zend\Log\Writer\Stream($this->config['logfile']));
 	    }
 	}
@@ -200,7 +199,7 @@ class WebsocketServer extends Console {
 			if(false === ($bytes = socket_recv($socket, $buffer, 4096, 0)))
 			{
 			    // error on recv, remove client socket (will check to send close frame)
-			    $this->sendClientClose($clientId, Frame::SERVER_STATUS_PROTOCOL_ERROR);
+			    $this->close($clientId, Frame::SERVER_STATUS_PROTOCOL_ERROR);
 			}
 			elseif($bytes > 0)
 			{
@@ -208,7 +207,7 @@ class WebsocketServer extends Console {
 			    if(!$this->processClient($clientId, $buffer, $bytes))
 			    {
 				// closing again. Some error from event or wron response code
-				$this->sendClientClose($clientId, Frame::SERVER_STATUS_PROTOCOL_ERROR);
+				$this->close($clientId, Frame::SERVER_STATUS_PROTOCOL_ERROR);
 			    }
 			}
 			else
@@ -272,7 +271,7 @@ class WebsocketServer extends Console {
 	    // if the client's opening handshake is complete, tell the client the server is 'going away'
 	    if($client[2] != Frame::SERVER_READY_STATE_CONNECTING)
 	    { 
-		$this->sendClientClose($clientId, Frame::SERVER_STATUS_GONE_AWAY);
+		$this->close($clientId, Frame::SERVER_STATUS_GONE_AWAY);
 	    }
 	    $this->console("Destroy ".$client[0]);
 
@@ -321,7 +320,7 @@ class WebsocketServer extends Console {
 		    if($time >= $client[4] + $this->config['timeout_pong'])
 		    {
 			// client didn't respond to the server's ping request in $this->config['timeout_pong'] seconds
-			$this->sendClientClose($clientId, Frame::SERVER_STATUS_TIMEOUT);
+			$this->close($clientId, Frame::SERVER_STATUS_TIMEOUT);
 			$this->removeClient($clientId);
 		    }
 		}
@@ -544,29 +543,6 @@ class WebsocketServer extends Console {
     }
     
     /**
-     * sendClientClose($clientId, $status = false) close frame connect
-     * @param int $clientId sock identifier
-     * @param int $status response status
-     * @access public
-     * @return boolean
-     */
-    public function sendClientClose($clientId, $status = false)
-    {
-	// check if client ready state is already closing or closed
-	if($this->clients[$clientId][2] == Frame::SERVER_READY_STATE_CLOSING || $this->clients[$clientId][2] == Frame::SERVER_READY_STATE_CLOSED) return true;
-
-	// store close status
-	$this->clients[$clientId][5] = $status;
-
-	// send close frame to client
-	$status = $status !== false ? pack('n', $status) : '';
-	$this->sendClientMessage($clientId, Frame::SERVER_OPCODE_CLOSE, $status);
-
-	// set client ready state to closing
-	$this->clients[$clientId][2] = Frame::SERVER_READY_STATE_CLOSING;
-    }
-    
-    /**
      * buildClientFrame($clientId, &$buffer, $bufferLength) create a frame to data transfering
      * @param int $clientId connection id
      * @param string $buffer request message
@@ -665,7 +641,7 @@ class WebsocketServer extends Console {
 		    $array = unpack('Na', $payloadLengthExtended32_1);
 		    if($array['a'] != 0 || ord(substr($payloadLengthExtended, 4, 1)) & 128)
 		    {
-			$this->sendClientClose($clientId, Frame::SERVER_STATUS_MESSAGE_TOO_BIG);
+			$this->close($clientId, Frame::SERVER_STATUS_MESSAGE_TOO_BIG);
 			return false;
 		    }
 
@@ -677,7 +653,7 @@ class WebsocketServer extends Console {
 		    // 14 for header size, 4095 for last recv() next frame bytes
 		    if($array['a'] > 2147479538)
 		    {
-			$this->sendClientClose($clientId, Frame::SERVER_STATUS_MESSAGE_TOO_BIG);
+			$this->close($clientId, Frame::SERVER_STATUS_MESSAGE_TOO_BIG);
 			return false;
 		    }
 
@@ -694,7 +670,7 @@ class WebsocketServer extends Console {
 		if($this->clients[$clientId][7] > $this->config['max_frame_payload_recv'])
 		{
 		    $this->clients[$clientId][7] = false;
-		    $this->sendClientClose($clientId, Frame::SERVER_STATUS_MESSAGE_TOO_BIG);
+		    $this->close($clientId, Frame::SERVER_STATUS_MESSAGE_TOO_BIG);
 		    return false;
 		}
 
@@ -706,7 +682,7 @@ class WebsocketServer extends Console {
 		    $newMessagePayloadLength = $this->clients[$clientId][11] + $this->clients[$clientId][7];
 		    if($newMessagePayloadLength > $this->config['max_message_payload_recv'] || $newMessagePayloadLength > 2147483647)
 		    {
-			$this->sendClientClose($clientId, Frame::SERVER_STATUS_MESSAGE_TOO_BIG);
+			$this->close($clientId, Frame::SERVER_STATUS_MESSAGE_TOO_BIG);
 			return false;
 		    }
 		}
@@ -757,7 +733,7 @@ class WebsocketServer extends Console {
 	    else
 	    {
 		// the server has not already sent a close frame to the client, send one now
-		$this->sendClientClose($clientId, Frame::SERVER_STATUS_NORMAL_CLOSE);
+		$this->close($clientId, Frame::SERVER_STATUS_NORMAL_CLOSE);
 	    }
 	    $this->removeClient($clientId);
 	}
@@ -904,35 +880,35 @@ class WebsocketServer extends Console {
      */
     public function processClientHandshake($clientId, &$buffer)
     {
+	$params = array(); 
+	
 	$this->console(sprintf("Clients: %d / %d", $this->_clientCount, $this->config['max_clients']));
 
-	if(preg_match("/Sec-WebSocket-Version: (.*)\r\n/", $buffer, $match)) $version = $match[1];
+	if(preg_match("/Sec-WebSocket-Version: (.*)\r\n/", $buffer, $match)) $params['version'] = $match[1];
 	else
 	{
 	    $this->console("The client doesn't support WebSocket");
 	    return false;
 	}
-	if($version == 13)
+	if($params['version'] > 8)
 	{
 	    // Extract header variables
-	    if(preg_match("/GET (.*) HTTP/", $buffer, $match)) $root = $match[1];
-	    if(preg_match("/Host: (.*)\r\n/", $buffer, $match)) $host = $match[1];
-	    if(preg_match("/Origin: (.*)\r\n/", $buffer, $match)) $origin = $match[1];
-	    if(preg_match("/Sec-WebSocket-Key: (.*)\r\n/", $buffer, $match)) $key = $match[1];
-	    if(preg_match("/Sec-WebSocket-Extensions: (.*)\r\n/", $buffer, $match)) $extensions = $match[1];
+	    if(preg_match("/GET (.*) HTTP/", $buffer, $match)) $params['root'] = $match[1];
+	    if(preg_match("/Host: (.*)\r\n/", $buffer, $match)) $params['host'] = $match[1];
+	    if(preg_match("/Origin: (.*)\r\n/", $buffer, $match)) $params['origin'] = $match[1];
+	    if(preg_match("/Sec-WebSocket-Key: (.*)\r\n/", $buffer, $match)) $params['key'] = $match[1];
 
 	    // check request data
-	    if(!isset($root) || !isset($host) || !isset($origin) || (!isset($key) && strlen(base64_decode($key)) != 16)) return false;
+	    if(array_search('',$params))  return false;
 
 	    $this->console("New client headers are:");
-	    $this->console("\t- Root: ".$root);
-	    $this->console("\t- Host: ".$host);
-	    $this->console("\t- Origin: ".$origin);
-	    $this->console("\t- Sec-WebSocket-Key: ".$key);
-	    $this->console("\t- Sec-WebSocket-Version: ".$version);
-	    $this->console("\t- Sec-WebSocket-Extensions: ".$extensions);
+	    $this->console("\t- Root: ".$params['root']);
+	    $this->console("\t- Host: ".$params['host']);
+	    $this->console("\t- Origin: ".$params['origin']);
+	    $this->console("\t- Sec-WebSocket-Key: ".$params['key']);
+	    $this->console("\t- Sec-WebSocket-Version: ".$params['version']);
 
-	    $acceptKey = \Zend\Ldap\Ldif\Encoder::encode(pack('H*', sha1($key.'258EAFA5-E914-47DA-95CA-C5AB0DC85B11')));
+	    $acceptKey = \Zend\Ldap\Ldif\Encoder::encode(pack('H*', sha1($params['key'].'258EAFA5-E914-47DA-95CA-C5AB0DC85B11')));
 
 	    // setting up new response headers
 
@@ -940,8 +916,8 @@ class WebsocketServer extends Console {
 		'HTTP/1.1 101 WebSocket Protocol Handshake',
 		'Upgrade: websocket',
 		'Connection: Upgrade',
-		'WebSocket-Origin: '.$origin,
-		'WebSocket-Location: ws://'.$host.$root,
+		'WebSocket-Origin: '.$params['origin'],
+		'WebSocket-Location: ws://'.$params['host'].$params['root'],
 		'Sec-WebSocket-Accept: '.$acceptKey
 	    ];
 	    $headers = implode("\r\n", $headers)."\r\n\r\n";
@@ -988,17 +964,29 @@ class WebsocketServer extends Console {
 	    return $this->sendClientMessage($client_id, $binary ? Frame::SERVER_OPCODE_BINARY : Frame::SERVER_OPCODE_TEXT, $message);
 	}
     }
-    
-     /**
-     * close($client_id) close socket
-     * @param int $client_id sock identifier
-      * @access public
-     * @return null
+    /**
+     * close($clientId, $status = false) close frame connect
+     * @param int $clientId sock identifier
+     * @param int $status response status
+     * @access public
+     * @return boolean
      */
-    public function close($client_id)
+    
+    public function close($clientId, $status = false)
     {
-	return $this->sendClientClose($clientId, Frame::SERVER_STATUS_NORMAL_CLOSE);
-    }
+	// check if client ready state is already closing or closed
+	if($this->clients[$clientId][2] == Frame::SERVER_READY_STATE_CLOSING || $this->clients[$clientId][2] == Frame::SERVER_READY_STATE_CLOSED) return true;
+
+	// store close status
+	$this->clients[$clientId][5] = $status;
+
+	// send close frame to client
+	$status = $status !== false ? pack('n', $status) : '';
+	$this->sendClientMessage($clientId, Frame::SERVER_OPCODE_CLOSE, $status);
+
+	// set client ready state to closing
+	$this->clients[$clientId][2] = Frame::SERVER_READY_STATE_CLOSING;
+    }    
 
     /**
      * bind($type, $func) add event listener
