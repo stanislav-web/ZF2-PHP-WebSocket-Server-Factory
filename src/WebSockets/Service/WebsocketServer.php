@@ -579,12 +579,7 @@ class WebsocketServer extends Console {
 		$result = $this->processClientFrame($clientId);
 
 		// check if the client wasn't removed, then reset frame data
-		if(isset($this->clients[$clientId]))
-		{
-		    $this->clients[$clientId][7] = false;
-		    $this->clients[$clientId][8] = 0;
-		    $this->clients[$clientId][9] = '';
-		}
+		$this->__opcodereset($clientId);
 
 		// if there's no extra bytes for the next frame, or processing the frame failed, return the result of processing the frame
 		if($nextFrameBytesLength <= 0 || !$result) return $result;
@@ -842,12 +837,7 @@ class WebsocketServer extends Console {
 		$result = $this->processClientMessage($clientId, $this->clients[$clientId][10], $this->clients[$clientId][1], $this->clients[$clientId][11]);
 
 		// check if the client wasn't removed, then reset message buffer and message opcode
-		if(isset($this->clients[$clientId]))
-		{
-		    $this->clients[$clientId][1] = '';
-		    $this->clients[$clientId][10] = 0;
-		    $this->clients[$clientId][11] = 0;
-		}
+		$this->__opcodereset($clientId);
 		return $result;
 	    }
 	}
@@ -947,7 +937,23 @@ class WebsocketServer extends Console {
 	    return false;
 	}
     }
-
+    
+    /**
+     * __opcodereset($clientId) reset opcode frame
+     * @param int $clientId socket identifier
+     * @access private
+     * @return null
+     */
+    private function __opcodereset($clientId)
+    {
+	if(isset($this->clients[$clientId]))
+	{
+	    $this->clients[$clientId][1] = '';
+	    $this->clients[$clientId][10] = 0;
+	    $this->clients[$clientId][11] = 0;
+	}	
+    }
+    
     /**
      * send($client_id, $message, $binary = false) echo message sender
      * @param int $client_id sock identifier
