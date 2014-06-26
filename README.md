@@ -57,7 +57,7 @@ $result .= isset($row[0]) ? $row[0] . "\n" : '';
 ?>
 ```
 It might be fixed until not fix in the next update.
-You're always can ask me for this module if you have write me [issue](https://github.com/zendframework/zf2https://github.com/stanislav-web/ZF2-PHP-WebSocket-Server/issues)
+You're always can ask me for this module if you have write me [issue](https://github.com/stanislav-web/ZF2-PHP-WebSocket-Server-Factory/issues/1)
 
 #### Installation and Running Server :
 
@@ -79,13 +79,32 @@ As an example, you can see the implementation "Chat"
 ```
 WebSockets\src\WebSockets\Application\Chat.php
 ```
+then push it ot your controller like this
+```
+<?php
+	    // get factory container
+	    $factory        = $this->getServiceLocator()->get('WebSockets\Factory\ApplicationFactory');
+
+	    // get application @see /src/WebSockets/Application/Chat.php etc..
+	    $app       = $factory->dispatch('Chat'); 
+	    
+	    // bind events from application 
+	    // ! must be implements of your every new Application
+	    $app->bind('open', 'onOpen');
+	    $app->bind('message', 'onMessage');
+	    $app->bind('close', 'onClose');
+
+	    // running server application
+	    $app->run();
+?>
+```
 ------------
 In order to start using the module clone the repo in your vendor directory or add it as a submodule if you're already using git for your project:
 
     `
-    git clone https://github.com/stanislav-web/ZF2-PHP-WebSocket-Server.git vendor/WebSockets
+    git clone https://github.com/stanislav-web/ZF2-PHP-WebSocket-Server-Factory.git vendor/WebSockets
     or
-    git submodule add     git clone https://github.com/stanislav-web/ZF2-PHP-WebSocket-Server.git vendor/WebSockets
+    git submodule add     git clone https://github.com/stanislav-web/ZF2-PHP-WebSocket-Server-Factory.git vendor/WebSockets
     `
     
 The module will also be available as a Composer package soon.
