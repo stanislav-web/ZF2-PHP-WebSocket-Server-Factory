@@ -461,7 +461,7 @@ class WebsocketServer extends Console {
 	$collect['frameCount']	= ($frameCount == 0) ? 1 : $frameCount;
 
 	// set last frame variables
-	$collect['maxFrame']	=   $maxFrame;
+	$collect['maxFrame']	=   $collect['frameCount']-1;
 	$lastFrameBufferLength = ($collect['messageLength'] % $collect['bufferSize']) != 0 ? ($collect['messageLength'] % $collect['bufferSize']) : ($collect['messageLength'] != 0 ? $collect['bufferSize'] : 0);
 
 	// loop around all frames to send
@@ -678,11 +678,7 @@ class WebsocketServer extends Console {
 	{
 	    // received close message
 	    if(substr($data, 1, 1) !== false)
-	    {
-		$array = unpack('na', substr($data, 0, 2));
-		$status = $array['a'];
-	    }
-	    else $status = false;
+		    $array = unpack('na', substr($data, 0, 2));
 
 	    if($this->clients[$clientId][2] == Frame::get('SERVER_READY_STATE_CLOSING'))
 	    {
