@@ -1,0 +1,33 @@
+{
+    "name": "stanislav-web/ZF2-PHP-WebSocket-Server",
+    "description": "ZF2 PHP WebSocket Server Factory v2.0 (Extended)",
+    "type": "library",
+    "keywords": [
+        "zf2",
+        "websockets",
+        "websocket server",
+        "websocket chat",
+        "websockets php",
+        "websocket php server"
+    ],
+    "homepage": "https://github.com/stanislav-web/ZF2-PHP-WebSocket-Server-Factory.git",
+    "authors": [
+        {
+            "name": "Stanislav WEB",
+            "email": "stanisov@gmail.com",
+            "homepage": "https://github.com/stanislav-web/"
+        }
+    ],
+    "require": {
+        "php": ">=5.4",
+        "zendframework/zendframework": ">=2.0.0"
+    },
+    "autoload": {
+        "psr-0": {
+            "WebSockets": "src/"
+        },
+        "classmap": [
+            "./"
+        ]
+    }
+}
