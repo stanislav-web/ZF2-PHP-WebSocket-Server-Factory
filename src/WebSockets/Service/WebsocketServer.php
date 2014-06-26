@@ -943,7 +943,7 @@ class WebsocketServer extends Console {
 	}
 	else
 	{
-	    $this->console("WebSocket version 13 required (the client supports version {$version})");
+	    $this->console("WebSocket version 13 required (the client supports version {$params['version']})");
 	    return false;
 	}
     }
