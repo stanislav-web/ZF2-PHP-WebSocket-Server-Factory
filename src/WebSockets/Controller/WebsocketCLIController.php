@@ -50,7 +50,7 @@ class WebsocketCLIController extends AbstractActionController
             // applications from response <app>
 	    // get it @see /src/WebSockets/Application/Chat.php etc..
 
-	    $client	= $request->getParam('app', false);
+	    $client	= $request->getParam('app');
 
 	    $app	= $factory->dispatch(ucfirst($client));
 	    
