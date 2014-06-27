@@ -1,6 +1,6 @@
 {
     "name": "stanislav-web/ZF2-PHP-WebSocket-Server",
-    "description": "ZF2 PHP WebSocket Server Factory v2.0 (Extended)",
+    "description": "ZF2 PHP WebSocket Server Factory v2.1 (Extended)",
     "type": "library",
     "keywords": [
         "zf2",
