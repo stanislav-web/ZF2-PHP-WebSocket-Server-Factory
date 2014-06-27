@@ -35,8 +35,8 @@ class Chat implements Aware\ApplicationInterface {
         // set ServiceManager throught constructor
         if(null === $this->_server)  $this->_server =   $server;
 	
-	$this->_server->console('Application: '.basename(get_class()));
-    }        
+	$this->say('System: Wellcome to '.basename(get_class()));
+    }
     
     /**
      * onOpen() opening a connection to the server
@@ -132,7 +132,7 @@ class Chat implements Aware\ApplicationInterface {
 		throw new Exception\ExceptionStrategy("Error! Function {$name} does not exist in ".get_class($this->_server)); 
 	
 	else if(sizeof($arguments) != 2)
-		throw new Exception\ExceptionStrategy("Error! Arguments setup incorrectly in".__CLASS__); 
+		throw new Exception\ExceptionStrategy("Error! Arguments setup incorrectly in ".__CLASS__); 
 	
 	return $this->_server->$name($arguments[0], $arguments[1], $this);
     }

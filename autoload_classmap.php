@@ -4,7 +4,6 @@
 return array(
   'WebSockets\Module'                               => __DIR__ .'Module.php',
   'WebSockets\Controller\WebsocketCLIController'    => __DIR__ .'/src/WebSockets/Controller/WebsocketCLIController.php',
-  'WebSockets\Controller\WebsocketController'       => __DIR__ .'/src/WebSockets/Controller/WebsocketController.php',
   'WebSockets\Exception\ExceptionStrategy'          => __DIR__ .'/src/WebSockets/Exception/ExceptionStrategy.php',
   'WebSockets\Factory\ApplicationFactory'           => __DIR__ .'/src/WebSockets/Factory/ApplicationFactory.php',
   'WebSockets\Aware\ApplicationInterface'	    => __DIR__ .'/src/WebSockets/Aware/ApplicationInterface.php',

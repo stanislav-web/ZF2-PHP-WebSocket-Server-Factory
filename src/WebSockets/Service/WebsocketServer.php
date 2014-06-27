@@ -952,7 +952,7 @@ class WebsocketServer extends Console {
 	if(isset($this->_read[0]))
 	{
 	    $this->console("Failed. Server gone away ((");
-	    return false;
+	    $this->shutdown();
 	}
 
 	// open TCP / IP stream and hang port specified in the config
@@ -995,7 +995,7 @@ class WebsocketServer extends Console {
      */
     public function send($client_id, $message, $binary = false)
     {
-	if($message)
+	if(isset($message) && isset($client_id))
 	{
 	    $this->_callback->say($message);
 	    return $this->dispatchMessage($client_id, $binary ? Frame::get('SERVER_OPCODE_BINARY') : Frame::get('SERVER_OPCODE_TEXT'), $message);

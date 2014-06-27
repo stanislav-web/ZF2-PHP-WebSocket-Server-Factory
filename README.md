@@ -1,4 +1,4 @@
-ZF2 PHP WebSocket Server Factory v2.0 (Extended)
+ZF2 PHP WebSocket Server Factory v2.1 (Extended)
 ------
 ![Alt text](https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcRpi209uZxeUrXP6cFLxuFbsTQkm9V0anTgp7Y-ltpEG6sw-txlvg "WebSockets")
 
@@ -16,6 +16,9 @@ You can organize a chat, monitor live site visit, you can create real-time stati
 
 #### Changes
 ------------
+v2.1
+- Select client's application from console like `php -q index.php websocket open <app>`
+
 v2.0
 - Add "Chat" application as example
 - More advanced interface
@@ -29,7 +32,7 @@ v1.3
 - Add logger
 
 v1.2
-- Add verbose turner (console show\hide) (@see module.config.php)
+- Add verbose turner (debug show\hide) (@see module.config.php)
 - Add socket function's exception handler
 - Fixed CLI stdout>> encoding
 - Add ViewHelper for a simple get server config params into view
@@ -65,9 +68,9 @@ You're always can ask me for this module if you have write me [issue](https://gi
 
 2. Perform module configuration file module.config.php
 
-3. Go to your shell command-line interface and type (running server as background): `php -q index.php websocket open`
+3. Go to your shell command-line interface and type (running server as background): `php -q index.php websocket open <app>` (app like as your client application)
 
-4. Setup your Client-side script's to communicating with the server .. ws://host:port/websocket/open (main "Chat Application" controller) communicating as similarity
+4. Setup your Client-side script's to communicating with the server .. ws://host:port/websocket/open/<app>
 
 #### How can i do the Application ?
 ------------
@@ -79,14 +82,18 @@ As an example, you can see the implementation "Chat"
 ```
 WebSockets\src\WebSockets\Application\Chat.php
 ```
-then push it ot your controller like this
+then call server from your cli controller
 ```
 <?php
 	    // get factory container
 	    $factory        = $this->getServiceLocator()->get('WebSockets\Factory\ApplicationFactory');
+            
+            // applications from response <app>
+	    // get it @see /src/WebSockets/Application/Chat.php etc..
 
-	    // get application @see /src/WebSockets/Application/Chat.php etc..
-	    $app       = $factory->dispatch('Chat'); 
+	    $client	= $request->getParam('app', false);
+
+	    $app	= $factory->dispatch(ucfirst($client)); 
 	    
 	    // bind events from application 
 	    // ! must be implements of your every new Application
@@ -94,7 +101,7 @@ then push it ot your controller like this
 	    $app->bind('message', 'onMessage');
 	    $app->bind('close', 'onClose');
 
-	    // running server application
+	    // running server
 	    $app->run();
 ?>
 ```

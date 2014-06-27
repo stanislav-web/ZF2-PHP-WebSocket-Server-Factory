@@ -56,7 +56,6 @@ return [
       */
     'controllers' => [
         'invokables' => [
-            'websocket.Controller'      => 'WebSockets\Controller\WebsocketController',         // client controller
             'websocket.CLI'             => 'WebSockets\Controller\WebsocketCLIController',      // server controller (from CLI)
         ],
     ],
@@ -65,37 +64,17 @@ return [
      * Configure the router module
      */
 
-    'router' => [
-        'routes' => [
-
-            // Rout for socket server
-                
-            'websocket' => [ // opening a connection through a browser (not recomended)
-                'type'          => 'Segment',
-                'options'       => [
-                    'route'         => '/websocket[/:action]',
-                    'constraints'   => [
-                        'action'        => 'open',
-                    ],
-                    'defaults' => [
-                        'controller'    => 'websocket.Controller',
-                        'action'        => 'open',
-                    ],
-                ],
-            ],
-        ],
-    ], 
-    
     'console' => [
         'router' => [
             'routes' => [
                 'websocket-console' => [ // opening a connection through a CLI
                     'options'   => [
-                        'route' => 'websocket open',
+                        'route' => 'websocket open <app>',
                         'defaults' => [
                             '__NAMESPACE__' => 'WebSockets\Controller\WebsocketCLIController',
                             'controller'    => 'websocket.CLI',
                             'action'        => 'open',
+                            'app'	    => 'Chat',
                         ],
                     ],
                 ],  

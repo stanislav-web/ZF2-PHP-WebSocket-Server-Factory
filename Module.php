@@ -98,10 +98,11 @@ class Module implements
             
             // Here I describe the console Command
             
-            'websocket open '	=> 'Server start',
+            'websocket open <app>'	=> 'Server start',
             'websocket system [--verbose|-v] <option>'   =>  'type the system command',
-            ['option'		=>  'system command for your CLI'],
-            ['--verbose|-v'	=>  '(optional) turn on verbose mode'],
+            ['app'			=>  'application will be run throught socket'],
+            ['option'			=>  'system command for your CLI'],
+            ['--verbose|-v'		=>  '(optional) turn on verbose mode'],
         ];
     }
     

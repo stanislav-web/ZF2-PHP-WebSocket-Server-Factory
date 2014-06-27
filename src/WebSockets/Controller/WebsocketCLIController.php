@@ -47,8 +47,12 @@ class WebsocketCLIController extends AbstractActionController
 	    // get factory container
 	    $factory        = $this->getServiceLocator()->get('WebSockets\Factory\ApplicationFactory');
 
-	    // get application @see /src/WebSockets/Application/Chat.php etc..
-	    $app       = $factory->dispatch('Chat'); 
+            // applications from response <app>
+	    // get it @see /src/WebSockets/Application/Chat.php etc..
+
+	    $client	= $request->getParam('app', false);
+
+	    $app	= $factory->dispatch(ucfirst($client));
 	    
 	    // bind events from application 
 	    // ! must be implements of your every new Application
