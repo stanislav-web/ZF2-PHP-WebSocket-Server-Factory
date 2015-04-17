@@ -10,12 +10,18 @@
         "websockets php",
         "websocket php server"
     ],
-    "homepage": "https://github.com/stanislav-web/ZF2-PHP-WebSocket-Server-Factory.git",
+    "support": {
+        "issues": "https://github.com/stanislav-web/ZF2-PHP-WebSocket-Server-Factory/issues"
+    },
+    "homepage": "https://github.com/stanislav-web/ZF2-PHP-WebSocket-Server-Factory",
+    "minimum-stability": "stable",
+    "license": "MIT",
     "authors": [
         {
             "name": "Stanislav WEB",
             "email": "stanisov@gmail.com",
-            "homepage": "https://github.com/stanislav-web/"
+            "homepage": "https://github.com/stanislav-web/",
+            "role": "Developer"
         }
     ],
     "require": {
