@@ -1,5 +1,5 @@
 {
-    "name": "stanislav-web/ZF2-PHP-WebSocket-Server",
+    "name": "stanislav-web/zf2-websocket-server-factory",
     "description": "ZF2 PHP WebSocket Server Factory v2.1 (Extended)",
     "type": "library",
     "keywords": [
@@ -10,7 +10,7 @@
         "websockets php",
         "websocket php server"
     ],
-    "homepage": "https://github.com/stanislav-web/ZF2-PHP-WebSocket-Server-Factory.git",
+    "homepage": "https://github.com/stanislav-web/zf2-websocket-server-factory.git",
     "authors": [
         {
             "name": "Stanislav WEB",
