@@ -1,3 +1,4 @@
+<?php 
 /**
  * Configurator router current module (Websocket) 
  * Here are set settings aliases and URL template processing 
