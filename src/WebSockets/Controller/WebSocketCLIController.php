@@ -2,10 +2,9 @@
 namespace WebSockets\Controller; // Namespaces of current controller
 
 use Zend\Mvc\Controller\AbstractActionController,
-    Zend\Console\Request as ConsoleRequest; // limiting console output
-
-
-use WebSockets\Exception;
+    Zend\Console\Request as ConsoleRequest, // limiting console output
+    WebSockets\Factory\ApplicationFactory,
+    WebSockets\Exception;
 
 /**
  * Controller to run through a CLI
@@ -14,19 +13,12 @@ use WebSockets\Exception;
  * @since PHP >=5.4
  * @version 1.0
  * @author Stanislav WEB | Lugansk <stanisov@gmail.com>
- * @copyright Stanilav WEB
- * @license Zend Framework GUI licene
+ * @copyright Stanislav WEB
+ * @license Zend Framework GUI license
  * @filesource /vendor/Websocket/src/Websocket/Controller/WebsocketCLIController.php
  */
-class WebsocketCLIController extends AbstractActionController
+class WebSocketCLIController extends AbstractActionController
 {
-    /**
-     * $_server Object server connection
-     * @access private
-     * @var resource
-     */    
-    private $_server = null;    
-
     /**
      * openAction() Running socket - server
      * @access public
@@ -43,25 +35,25 @@ class WebsocketCLIController extends AbstractActionController
         // Try to start server
         
         try {        
-	    
-	    // get factory container
-	    $factory        = $this->getServiceLocator()->get('WebSockets\Factory\ApplicationFactory');
+
+	        // get factory container
+	        $factory = new ApplicationFactory($this->getServiceLocator());
 
             // applications from response <app>
-	    // get it @see /src/WebSockets/Application/Chat.php etc..
+	        // get it @see /src/WebSockets/Application/Chat.php etc..
 
-	    $client	= $request->getParam('app');
+	        $client	= $request->getParam('app');
 
-	    $app	= $factory->dispatch(ucfirst($client));
+	        $app = $factory->dispatch(ucfirst($client));
 	    
-	    // bind events from application 
-	    // ! must be implements of your every new Application
-	    $app->bind('open', 'onOpen');
-	    $app->bind('message', 'onMessage');
-	    $app->bind('close', 'onClose');
+	        // bind events from application
+	        // ! must be implements of your every new Application
+	        $app->bind('open', 'onOpen');
+	        $app->bind('message', 'onMessage');
+	        $app->bind('close', 'onClose');
 
-	    // running server application
-	    $app->run();
+	        // running server application
+	        $app->run();
         }
         catch(Exception\ExceptionStrategy $e) 
         {
@@ -75,7 +67,7 @@ class WebsocketCLIController extends AbstractActionController
      * @return console
      */    
     public function systemAction()
-    {   
+    {
         $request    = $this->getRequest();
 
         if(!$request instanceof ConsoleRequest) {
@@ -87,9 +79,6 @@ class WebsocketCLIController extends AbstractActionController
         try {        
             // Get system service name  from console and check if the user used --verbose or -v flag
             $option     = $request->getParam('option', false);
-            $verbose    = ($request->getParam('verbose')) ? $request->getParam('verbose') : $request->getParam('v');
-            
-            if($verbose != false) echo 'Command execute: '.$option.PHP_EOL;
             $option = preg_replace('#"#', '', $option);
             if(is_string($option)) system($option, $val);
         }
@@ -98,5 +87,4 @@ class WebsocketCLIController extends AbstractActionController
             echo $e->throwMessage();
         }        
     }     
-    
 }

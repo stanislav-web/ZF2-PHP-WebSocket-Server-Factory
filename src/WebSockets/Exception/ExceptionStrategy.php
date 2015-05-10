@@ -20,19 +20,20 @@ class ExceptionStrategy extends \UnexpectedValueException{
      * @access protected
      */
     protected $_message = null;
-    
-    
+
     /**
      * $_line only message in console
      * @var type string
      * @access protected
      */
     protected $_line = null;
-    
 
-    
-    public function throwMessage()
-    {
-	return $this->getMessage().' [line: '.$this->getLine().']';
+    /**
+     * Throw exception message
+     *
+     * @return string
+     */
+    public function throwMessage() {
+	    return $this->getMessage().' [line: '.$this->getLine().']';
     }
 }

@@ -1,4 +1,4 @@
-ZF2 PHP WebSocket Server Factory v2.1 (Extended)
+ZF2 PHP WebSocket Server Factory v2.1.1 (Extended)
 ------
 ![Alt text](https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcRpi209uZxeUrXP6cFLxuFbsTQkm9V0anTgp7Y-ltpEG6sw-txlvg "WebSockets")
 
@@ -12,10 +12,12 @@ You can organize a chat, monitor live site visit, you can create real-time stati
 #### Requirements
 ------------
 * PHP 5.4+
-* [Zend Framework 2](https://github.com/zendframework/zf2)
+* [Zend Framework 2.4 >](https://github.com/zendframework/zf2)
 
 #### Changes
 ------------
+v2.1.1
+- Fixed service locator which is got ApplicationFactory
 v2.1
 - Select client's application from console like `php -q index.php websocket open <app>`
 
@@ -49,7 +51,7 @@ v1.1
 - Fixes some problem with startup
 - Add console command interface for costom system commands (for example)
 `
-php -q index.php websocket system -v "whoami"
+php -q index.php websocket system "whoami"
 `
 (Note for ZF2.2): if you have an exceptions `Notice Undefined offset: 0` while starting console server please follow this:
 
@@ -64,31 +66,40 @@ You're always can ask me for this module if you have write me [issue](https://gi
 
 #### Installation and Running Server :
 
-1. That needs to be done is adding it to your application's list of active modules. Add module "WebSockets" in your application.config.php
+1. First update your dependencies through composer. Then run to update dependency and update autoloader
 
-2. Perform module configuration file module.config.php
+```php
+php composer.phar require stanislav-web/zf2-websocket-server-factory
+php composer.phar install -o
 
-3. Go to your shell command-line interface and type (running server as background): `php -q index.php websocket open <app>` (app like as your client application)
+```
 
-4. Setup your Client-side script's to communicating with the server .. ws://host:port/websocket/open/<app>
+2. That needs to be done is adding it to your application's list of active modules. Add module "WebSockets" in your application.config.php
+
+3. Perform module configuration file module.config.php
+
+4. Go to your shell command-line interface and type (running server as background): `php -q index.php websocket open <app>` (app like as your client application)
+
+5. Setup your Client-side script's to communicating with the server .. ws://host:port/websocket/open/<app>
 
 #### How can i do the Application ?
 ------------
 New application you can do according to the rules interface 
 ```
-WebSockets\src\WebSockets\Aware\ApplicationInterface.php
+src\WebSockets\Aware\ApplicationInterface.php
 ``` 
 As an example, you can see the implementation "Chat" 
 ```
-WebSockets\src\WebSockets\Application\Chat.php
+src\WebSockets\Application\Chat.php
 ```
 then call server from your cli controller
 ```
 <?php
+
 	    // get factory container
-	    $factory        = $this->getServiceLocator()->get('WebSockets\Factory\ApplicationFactory');
-            
-            // applications from response <app>
+        $factory = new ApplicationFactory($this->getServiceLocator());
+
+        // applications from response <app>
 	    // get it @see /src/WebSockets/Application/Chat.php etc..
 
 	    $client	= $request->getParam('app');
@@ -107,7 +118,6 @@ then call server from your cli controller
 ```
 ------------
 In order to start using the module clone the repo in your vendor directory or add it as a submodule if you're already using git for your project:
-
     `
     git clone https://github.com/stanislav-web/ZF2-PHP-WebSocket-Server-Factory.git vendor/WebSockets
     or
@@ -118,7 +128,7 @@ The module will also be available as a Composer package soon.
 
 #### Libraries used
 
-- [Zend Framework 2.3](https://github.com/zendframework/zf2)
+- [Zend Framework 2.4](https://github.com/zendframework/zf2)
 - [WebSocket Protocol] (http://tools.ietf.org/html/rfc6455)
 - This repository is the continuation of the module from which I started work [https://github.com/stanislav-web/ZF2-PHP-WebSocket-Server] (https://github.com/stanislav-web/ZF2-PHP-WebSocket-Server)
 

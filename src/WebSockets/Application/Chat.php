@@ -12,8 +12,8 @@ use	WebSockets\Exception,
  * @since PHP >=5.4
  * @version 1.0
  * @author Stanislav WEB | Lugansk <stanisov@gmail.com>
- * @copyright Stanilav WEB
- * @license Zend Framework GUI licene
+ * @copyright Stanislav WEB
+ * @license Zend Framework GUI license
  * @filesource /vendor/Websockets/src/Websockets/Application/Chat.php
  */
 class Chat implements Aware\ApplicationInterface {

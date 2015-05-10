@@ -9,8 +9,8 @@ use WebSockets\Service\WebsocketServer;
  * @since PHP >=5.4
  * @version 1.0
  * @author Stanislav WEB | Lugansk <stanisov@gmail.com>
- * @copyright Stanilav WEB
- * @license Zend Framework GUI licene
+ * @copyright Stanislav WEB
+ * @license Zend Framework GUI license
  * @filesource /vendor/WebSockets/src/WebSockets/Aware/ApplicationInterface.php
  */
 interface ApplicationInterface {
@@ -49,7 +49,6 @@ interface ApplicationInterface {
      * @access public
      */
     public function say($message);     
-    
     
     /**
      * run() running application
