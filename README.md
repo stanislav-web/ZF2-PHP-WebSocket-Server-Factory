@@ -1,4 +1,4 @@
-ZF2 PHP WebSocket Server Factory v2.1.1 (Extended)
+ZF2 PHP WebSocket Server Factory v2.2.1 (Extended) [![Latest Stable Version](https://poser.pugx.org/stanislav-web/zf2-websocket-server-factory/v/stable)](https://packagist.org/packages/stanislav-web/zf2-websocket-server-factory) 
 ------
 ![Alt text](https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcRpi209uZxeUrXP6cFLxuFbsTQkm9V0anTgp7Y-ltpEG6sw-txlvg "WebSockets")
 
