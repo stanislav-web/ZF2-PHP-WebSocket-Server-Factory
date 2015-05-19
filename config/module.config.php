@@ -49,7 +49,7 @@ return [
 	    // the maximum length, in bytes, of a message's payload data, this is also internally limited to 2,147,483,647
 	    'max_message_payload_recv'	=>  500000,
 
-        'applications_namespace' => '\\WebSockets\\Application'
+        'applications_namespace' => ['\\WebSockets\\Application']
         ],
     ],
 

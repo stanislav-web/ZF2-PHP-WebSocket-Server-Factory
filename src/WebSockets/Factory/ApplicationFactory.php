@@ -15,7 +15,8 @@ use WebSockets\Exception,
  * @license Zend Framework GUI license
  * @filesource /vendor/WebSockets/src/WebSockets/Factory/ApplicationFactory.php
  */
-class ApplicationFactory {
+class ApplicationFactory
+{
 
     /**
      * Service Manager
@@ -29,13 +30,16 @@ class ApplicationFactory {
      *
      * @param \Zend\ServiceManager\ServiceManager $serviceManager
      */
-    public function __construct(\Zend\ServiceManager\ServiceManager $serviceManager) {
+    public function __construct(\Zend\ServiceManager\ServiceManager $serviceManager)
+    {
         $this->serviceManager = $serviceManager;
     }
 
     /**
      * dispatch($app) Get produced application object
+     *
      * @param string $app application object
+     *
      * @return \WebSockets\Application\  object
      * @throws Exception\ExceptionStrategy
      */
@@ -44,13 +48,16 @@ class ApplicationFactory {
         // need to provide dynamic objects creations 
 
         //Get namespaces for application
-        $config = $this->serviceManager->get('Config');
-        $namespace = $config['websockets']['applications_namespace'];
+        $config     = $this->serviceManager->get('Config');
+        $namespaces = $config['websockets']['applications_namespace'];
 
-        $Client = "$namespace\\$app";
-        // checking class..
-        if(!class_exists($Client)) throw new Exception\ExceptionStrategy($app.' application does not exist');
-
-        return new $Client(new WebsocketServer($config['websockets']['server']));
+        foreach ($namespaces as $namespace) {
+            // checking class..
+            $Client = "$namespace\\$app";
+            if ( TRUE === class_exists($Client) ) {
+                return new $Client(new WebsocketServer($config['websockets']['server']));
+            }
+        }
+        throw new Exception\ExceptionStrategy($app . ' application does not exist');
     }
 }
