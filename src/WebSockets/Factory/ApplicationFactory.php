@@ -49,7 +49,7 @@ class ApplicationFactory
 
         //Get namespaces for application
         $config     = $this->serviceManager->get('Config');
-        $namespaces = $config['websockets']['applications_namespace'];
+        $namespaces = $config['websockets']['server']['applications_namespace'];
 
         foreach ($namespaces as $namespace) {
             // checking class..
