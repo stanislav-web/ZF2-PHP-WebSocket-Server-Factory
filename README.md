@@ -16,6 +16,12 @@ You can organize a chat, monitor live site visit, you can create real-time stati
 
 #### Changes
 ------------
+
+v2.2.1 [Request from [AdamiecRadek](https://github.com/AdamiecRadek)]
+- Added support for changing default application namespace
+- Added support for multiple namespaces for applications
+- Hotfix for proper index in config
+ 
 v2.1.1
 - Fixed service locator which is got ApplicationFactory
 v2.1
