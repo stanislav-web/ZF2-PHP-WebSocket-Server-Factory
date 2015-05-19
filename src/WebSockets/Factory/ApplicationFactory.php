@@ -42,12 +42,15 @@ class ApplicationFactory {
     public function dispatch($app)
     {
         // need to provide dynamic objects creations 
-        
-	    $Client = "\\WebSockets\\Application\\$app";
-	    // checking class..
+
+        //Get namespaces for application
+        $config = $this->serviceManager->get('Config');
+        $namespace = $config['websockets']['applications_namespace'];
+
+        $Client = "$namespace\\$app";
+        // checking class..
         if(!class_exists($Client)) throw new Exception\ExceptionStrategy($app.' application does not exist');
 
-	    $config = $this->serviceManager->get('Config');
         return new $Client(new WebsocketServer($config['websockets']['server']));
     }
 }
