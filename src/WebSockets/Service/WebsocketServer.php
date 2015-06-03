@@ -399,8 +399,7 @@ class WebsocketServer extends Console
     {
         $collect = [];
         // check if client ready state is already closing or closed
-        if (!in_array($this->clients[$clientId][2],
-            [
+        if (in_array($this->clients[$clientId][2], [
                 Frame::get('SERVER_READY_STATE_CLOSING'),
                 Frame::get('SERVER_READY_STATE_CLOSED')
             ])
