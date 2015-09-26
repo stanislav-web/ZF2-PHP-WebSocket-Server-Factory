@@ -1,8 +1,8 @@
 <?php
 namespace WebSockets\Factory;
 
-use WebSockets\Exception,
-    WebSockets\Service\WebsocketServer;
+use WebSockets\Exception;
+use WebSockets\Service\WebsocketServer;
 
 /**
  * ApplicationFactory. Use this factory for get some client applications

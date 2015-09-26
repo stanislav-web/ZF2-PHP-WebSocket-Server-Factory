@@ -1,10 +1,10 @@
 <?php
 namespace WebSockets\Controller; // Namespaces of current controller
 
-use Zend\Mvc\Controller\AbstractActionController,
-    Zend\Console\Request as ConsoleRequest, // limiting console output
-    WebSockets\Factory\ApplicationFactory,
-    WebSockets\Exception;
+use Zend\Mvc\Controller\AbstractActionController;
+use Zend\Console\Request as ConsoleRequest;
+use WebSockets\Factory\ApplicationFactory;
+use WebSockets\Exception;
 
 /**
  * Controller to run through a CLI

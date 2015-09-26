@@ -1,9 +1,9 @@
 <?php
 namespace WebSockets\Application;
 
-use	WebSockets\Exception,
-	WebSockets\Aware,
-	WebSockets\Service\WebsocketServer;
+use	WebSockets\Exception;
+use WebSockets\Aware;
+use	WebSockets\Service\WebsocketServer;
 
 /**
  * Simply web socket Chat. (Notice: do the favourite app's like this example ;-)

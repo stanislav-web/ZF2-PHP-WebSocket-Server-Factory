@@ -2,6 +2,7 @@
 namespace WebSockets\Aware;
 
 use WebSockets\Service\WebsocketServer;
+
 /**
  * ApplicationInterface. Implementing rules necessary functionality for client's applications
  * @package Zend Framework 2

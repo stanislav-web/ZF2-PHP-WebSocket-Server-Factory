@@ -1,10 +1,11 @@
 <?php
 namespace WebSockets\Service; // Namespaces of current service
 
-use WebSockets\Status\WebSocketFrameCode as Frame,
-    WebSockets\Exception,
-    Zend\Debug\Debug,
-    Zend\Console\Console;
+use WebSockets\Status\WebSocketFrameCode as Frame;
+use WebSockets\Exception;
+use Zend\Ldap\Ldif\Encoder;
+use Zend\Debug\Debug;
+use Zend\Console\Console;
 
 /**
  * Server for WebSocket's protocol connection
@@ -399,7 +400,7 @@ class WebsocketServer extends Console
     {
         $collect = [];
         // check if client ready state is already closing or closed
-        if (in_array($this->clients[$clientId][2], [
+        if (!in_array($this->clients[$clientId][2], [
                 Frame::get('SERVER_READY_STATE_CLOSING'),
                 Frame::get('SERVER_READY_STATE_CLOSED')
             ])
@@ -763,7 +764,7 @@ class WebsocketServer extends Console
             $this->console("\t- Sec-WebSocket-Key: " . $params['key']);
             $this->console("\t- Sec-WebSocket-Version: " . $params['version']);
 
-            $acceptKey = \Zend\Ldap\Ldif\Encoder::encode(pack('H*', sha1($params['key'] . '258EAFA5-E914-47DA-95CA-C5AB0DC85B11')));
+            $acceptKey = Encoder::encode(pack('H*', sha1($params['key'] . '258EAFA5-E914-47DA-95CA-C5AB0DC85B11')));
 
             // setting up new response headers
 
