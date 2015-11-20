@@ -55,7 +55,11 @@ class ApplicationFactory
             // checking class..
             $Client = "$namespace\\$app";
             if ( TRUE === class_exists($Client) ) {
-                return new $Client(new WebsocketServer($config['websockets']['server']));
+                $obj = new $Client(new WebsocketServer($config['websockets']['server']));
+                if($obj instanceof \Zend\ServiceManager\ServiceLocatorAwareInterface) {
+                    $obj->setServiceLocator($this->serviceManager);
+                }
+                return $obj;
             }
         }
         throw new Exception\ExceptionStrategy($app . ' application does not exist');
