@@ -57,8 +57,8 @@ return [
       * Namespace for all controllers
       */
     'controllers' => [
-        'invokables' => [
-            'WebSockets\Controller\WebSocketCLIController' => 'WebSockets\Controller\WebSocketCLIController',      // server controller (from CLI)
+        'factories' => [
+            'WebSockets\Controller\WebSocketCLIController' => 'WebSockets\Controller\WebSocketCLIControllerFactory',      // server controller (from CLI)
         ],
     ],
 
