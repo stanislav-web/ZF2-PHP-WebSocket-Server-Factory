@@ -26,7 +26,8 @@
     ],
     "require": {
         "php": ">=5.4",
-        "zendframework/zendframework": ">=2.4.0"
+        "zendframework/zendframework": ">=2.4.0",
+        "zendframework/zend-ldap"    : ">-2.6.1"
     },
     "autoload": {
         "psr-0": {
