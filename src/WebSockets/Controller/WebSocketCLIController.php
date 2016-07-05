@@ -23,7 +23,14 @@ class WebSocketCLIController extends AbstractActionController
      * openAction() Running socket - server
      * @access public
      * @return console
-     */    
+     */
+    protected $serviceLocator;
+
+    public function __construct($serviceLocator)
+    {
+        $this->serviceLocator = $serviceLocator;
+    }
+
     public function openAction()
     {   
         $request    = $this->getRequest();
