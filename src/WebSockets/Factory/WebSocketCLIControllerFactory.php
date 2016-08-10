@@ -10,7 +10,7 @@ use Zend\ServiceManager\ServiceLocatorInterface;
  * Date: 23/04/2016
  * Time: 3:19 PM
  */
-class WebsocketCLIControllerFactory implements FactoryInterface
+class WebSocketCLIControllerFactory implements FactoryInterface
 {
     public function createService(ServiceLocatorInterface $serviceLocator)
     {
