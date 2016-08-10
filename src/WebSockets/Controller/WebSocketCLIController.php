@@ -19,18 +19,26 @@ use WebSockets\Exception;
  */
 class WebSocketCLIController extends AbstractActionController
 {
-    /**
-     * openAction() Running socket - server
-     * @access public
-     * @return console
-     */
     protected $serviceLocator;
+
+    /**
+     * @return mixed
+     */
+    public function getServiceLocator()
+    {
+        return $this->serviceLocator;
+    }
 
     public function __construct($serviceLocator)
     {
         $this->serviceLocator = $serviceLocator;
     }
 
+    /**
+     * openAction() Running socket - server
+     * @access public
+     * @return null
+     */
     public function openAction()
     {   
         $request    = $this->getRequest();

@@ -3,9 +3,10 @@
 
 return array(
   'WebSockets\Module'                               => __DIR__ .'Module.php',
-  'WebSockets\Controller\WebsocketCLIController'    => __DIR__ .'/src/WebSockets/Controller/WebsocketCLIController.php',
+  'WebSockets\Controller\WebSocketCLIController'    => __DIR__ .'/src/WebSockets/Controller/WebSocketCLIController.php',
   'WebSockets\Exception\ExceptionStrategy'          => __DIR__ .'/src/WebSockets/Exception/ExceptionStrategy.php',
   'WebSockets\Factory\ApplicationFactory'           => __DIR__ .'/src/WebSockets/Factory/ApplicationFactory.php',
+  'WebSockets\Factory\WebSocketCLIControllerFactory' => __DIR__ .'/src/WebSockets/Factory/WebSocketCLIControllerFactory.php',
   'WebSockets\Aware\ApplicationInterface'	    => __DIR__ .'/src/WebSockets/Aware/ApplicationInterface.php',
   'WebSockets\Service\WebsocketServer'              => __DIR__ .'/src/WebSockets/Service/WebsocketServer.php',
   'WebSockets\Status\WebSocketFrameCode'	    => __DIR__ .'/src/WebSockets/Status/WebSocketFrameCode.php',
