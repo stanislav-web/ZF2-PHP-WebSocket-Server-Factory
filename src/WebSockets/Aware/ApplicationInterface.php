@@ -17,12 +17,6 @@ use WebSockets\Service\WebsocketServer;
 interface ApplicationInterface {
     
     /**
-     *  __construct(WebsocketServer $server)
-     * @access public
-     */
-    public function __construct(WebsocketServer $server);
-    
-    /**
      * onOpen($clientId) opening a connection to the server
      * @param int $clientId connect identifier
      * @access public
