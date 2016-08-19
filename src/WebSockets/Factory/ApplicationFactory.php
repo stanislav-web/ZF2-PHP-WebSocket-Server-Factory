@@ -3,6 +3,7 @@ namespace WebSockets\Factory;
 
 use WebSockets\Exception;
 use WebSockets\Service\WebsocketServer;
+use Zend\ServiceManager\ServiceLocatorAwareInterface;
 
 /**
  * ApplicationFactory. Use this factory for get some client applications
@@ -56,10 +57,13 @@ class ApplicationFactory
             $Client = "$namespace\\$app";
             if ( TRUE === class_exists($Client) ) {
                 $obj = new $Client(new WebsocketServer($config['websockets']['server']));
-                if($obj instanceof \Zend\ServiceManager\ServiceLocatorAwareInterface) {
+                //Deprecated
+                if($obj instanceof ServiceLocatorAwareInterface) {
                     $obj->setServiceLocator($this->serviceManager);
                 }
-                return $obj;
+            }
+            if ($this->serviceManager->has($Client)) {
+                return $this->serviceManager->get($Client);
             }
         }
         throw new Exception\ExceptionStrategy($app . ' application does not exist');

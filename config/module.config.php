@@ -58,7 +58,7 @@ return [
       */
     'controllers' => [
         'factories' => [
-            'WebSockets\Controller\WebSocketCLIController' => 'WebSockets\Controller\WebSocketCLIControllerFactory',      // server controller (from CLI)
+            'WebSockets\Controller\WebSocketCLIController' => 'WebSockets\Factory\WebSocketCLIControllerFactory',      // server controller (from CLI)
         ],
     ],
 
