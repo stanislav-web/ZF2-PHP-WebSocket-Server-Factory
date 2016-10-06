@@ -32,7 +32,7 @@ class UnixSocketErrors {
      * $message
      * @var array 
      */
-    public static $m = [
+    public static $message = [
 	'0' => "Success",
 	'1' => "Operation not permitted",
 	'2' => "No such file or directory",
