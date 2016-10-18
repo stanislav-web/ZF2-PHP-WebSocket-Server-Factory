@@ -2,11 +2,9 @@
 namespace WebSockets;
 
 use Zend\ModuleManager\Feature\ConfigProviderInterface;
-
+use Zend\Console\Adapter\AdapterInterface as ConsoleInterface;
 //	Zend\ModuleManager\Feature\ViewHelperProviderInterface,    // provide view helpers
-//
 //	Zend\ModuleManager\Feature\ConsoleUsageProviderInterface,   // interfaces for CLI
-//	Zend\Console\Adapter\AdapterInterface as Console,         // add adapter for provider
 //	Zend\Console\Charset\CharsetInterface;
 
 /**
@@ -29,12 +27,57 @@ class Module implements
  {
 
 	/**
+	 * Default directory separator
+	 *
+	 * @const string DS
+	 */
+	const DS = DIRECTORY_SEPARATOR;
+
+	/**
 	 * Load default module configurations
 	 *
 	 * @return array
 	 */
 	public function getConfig () {
-		return include __DIR__ . '/config/module.config.php';
+		return include __DIR__ . self::DS .'..'.self::DS.'config'.self::DS.'module.config.php';
+	}
+
+	/**
+	 * Console usage helper
+	 *
+	 * @return array
+	 */
+	public function getConsoleUsage ( ConsoleInterface $Console ) {
+
+//		return array(
+//			'name'  => 'self-update',
+//			'description' => 'When executed via the Phar file, performs a self-update by querying
+//the package repository. If successful, it will report the new version.',
+//			'short_description' => 'Perform a self-update of the script',
+//		),
+//    array(
+//	    'name' => 'build',
+//	    'route' => '<package> [--target=]',
+//	    'description' => 'Build a package, using <package> as the package filename, and --target
+//as the application directory to be packaged.',
+//	    'short_description' => 'Build a package',
+//	    'options_descriptions' => array(
+//		    '<package>' => 'Package filename to build',
+//		    '--target'  => 'Name of the application directory to package; defaults to current working directory',
+//	    ),
+//	    'defaults' => array(
+//		    'target' => getcwd(), // default to current working directory
+//	    ),
+//	    'handler' => 'My\Builder',
+//    );
+
+		return [
+
+			'websocket open <app>'      => 'Server start',
+			'websocket system <option>' => 'type the system command',
+			[ 'app' => 'application will be run throught socket' ],
+			[ 'option' => 'system command for your CLI' ],
+		];
 	}
 
 	/**
@@ -59,20 +102,5 @@ class Module implements
 		return [ ];
 	}
 
-	/**
-	 * getConsoleUsage(Console $console) cantilever load scripts, descriptions of commands (For Console usage help)
-	 *
-	 * @return array
-	 */
-	public function getConsoleUsage ( Console $console ) {
-		return [
 
-			// Here I describe the console Command
-
-			'websocket open <app>'      => 'Server start',
-			'websocket system <option>' => 'type the system command',
-			[ 'app' => 'application will be run throught socket' ],
-			[ 'option' => 'system command for your CLI' ],
-		];
-	}
 }
