@@ -1,10 +1,10 @@
 <?php
 /**
- *   * WebSocket's module configure.
- *   * Here are the module's router settings.
- *   * Recorded all controllers in the process of creating an application
- *   * Set the path to the application by default
- *   */
+ * WebSocket's module configure.
+ * Here are the module's router settings.
+ * Recorded all controllers in the process of creating an application
+ * Set the path to the application by default
+ */
 return [
 
 	'websockets'  => [
@@ -20,8 +20,8 @@ return [
 		              // Enable (disable) CLI debug console to watching requests and responses data
 		              'debug'                    => true,
 
-		              // Console encoding messages
-		              'encoding'                 => 'utf-8',
+		              // Console charset messages
+		              'charset'                  => 'utf-8',
 
 		              // Use messages logger
 		              'log'                      => false,

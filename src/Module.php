@@ -2,10 +2,10 @@
 namespace WebSockets;
 
 use Zend\ModuleManager\Feature\ConfigProviderInterface;
-use Zend\Console\Adapter\AdapterInterface as ConsoleInterface;
-//	Zend\ModuleManager\Feature\ViewHelperProviderInterface,    // provide view helpers
-//	Zend\ModuleManager\Feature\ConsoleUsageProviderInterface,   // interfaces for CLI
-//	Zend\Console\Charset\CharsetInterface;
+use Zend\ModuleManager\Feature\ConsoleUsageProviderInterface;
+use Zend\ModuleManager\Feature\ConsoleBannerProviderInterface;
+use Zend\ModuleManager\Feature\ViewHelperProviderInterface;
+use Zend\Console\Adapter\AdapterInterface;
 
 /**
  * Class Module.
@@ -20,11 +20,10 @@ use Zend\Console\Adapter\AdapterInterface as ConsoleInterface;
  * @filesource /vendor/stanislav-web/zf2-websocket-server-factory/src/Module.php
  */
 class Module implements
-	ConfigProviderInterface
-//	ViewHelperProviderInterface,
-//	ConsoleUsageProviderInterface,
-//	CharsetInterface
- {
+	ConfigProviderInterface,
+	ConsoleUsageProviderInterface,
+	ConsoleBannerProviderInterface,
+	ViewHelperProviderInterface {
 
 	/**
 	 * Default directory separator
@@ -34,73 +33,81 @@ class Module implements
 	const DS = DIRECTORY_SEPARATOR;
 
 	/**
-	 * Load default module configurations
+	 * Module banner
 	 *
-	 * @return array
+	 * @const BANNER
+	 */
+	const BANNER = 'ZF2 PHP WebSocket Server Factory v3.1 (Extended)';
+
+	/**
+	 * Returns configuration to merge with application configuration
+	 *
+	 * @return array|\Traversable
 	 */
 	public function getConfig () {
-		return include __DIR__ . self::DS .'..'.self::DS.'config'.self::DS.'module.config.php';
+
+		$config = __DIR__ . self::DS . '..' . self::DS . 'config' . self::DS . 'module.config.php';
+
+		return require_once $config;
 	}
 
 	/**
-	 * Console usage helper
+	 * Returns an array or a string containing usage information for this module's Console commands.
+	 * The method is called with active Zend\Console\Adapter\AdapterInterface that can be used to directly access
+	 * Console and send output.
 	 *
-	 * @return array
+	 * If the result is a string it will be shown directly in the console window.
+	 * If the result is an array, its contents will be formatted to console window width. The array must
+	 * have the following format:
+	 *
+	 *     return array(
+	 *                'Usage information line that should be shown as-is',
+	 *                'Another line of usage info',
+	 *
+	 *                '--parameter'        =>   'A short description of that parameter',
+	 *                '-another-parameter' =>   'A short description of another parameter',
+	 *                ...
+	 *            )
+	 *
+	 * @param AdapterInterface $Console
+	 *
+	 * @return array|string|null
 	 */
-	public function getConsoleUsage ( ConsoleInterface $Console ) {
+	public function getConsoleUsage ( AdapterInterface $Console ) {
 
-//		return array(
-//			'name'  => 'self-update',
-//			'description' => 'When executed via the Phar file, performs a self-update by querying
-//the package repository. If successful, it will report the new version.',
-//			'short_description' => 'Perform a self-update of the script',
-//		),
-//    array(
-//	    'name' => 'build',
-//	    'route' => '<package> [--target=]',
-//	    'description' => 'Build a package, using <package> as the package filename, and --target
-//as the application directory to be packaged.',
-//	    'short_description' => 'Build a package',
-//	    'options_descriptions' => array(
-//		    '<package>' => 'Package filename to build',
-//		    '--target'  => 'Name of the application directory to package; defaults to current working directory',
-//	    ),
-//	    'defaults' => array(
-//		    'target' => getcwd(), // default to current working directory
-//	    ),
-//	    'handler' => 'My\Builder',
-//    );
+		$routes = __DIR__ . self::DS . '..' . self::DS . 'config' . self::DS . 'module.usage.php';
 
-		return [
-
-			'websocket open <app>'      => 'Server start',
-			'websocket system <option>' => 'type the system command',
-			[ 'app' => 'application will be run throught socket' ],
-			[ 'option' => 'system command for your CLI' ],
-		];
+		return require_once $routes;
 	}
 
 	/**
-	 * getViewHelperConfig() Setup your view helpers
+	 * Returns a string containing a banner text, that describes the module and/or the application.
+	 * The banner is shown in the console window, when the user supplies invalid command-line parameters or invokes
+	 * the application with no parameters.
 	 *
-	 * @return array
+	 * The method is called with active Zend\Console\Adapter\AdapterInterface that can be used to directly access Console and send
+	 * output.
+	 *
+	 * @param AdapterInterface $console
+	 *
+	 * @return string|null
+	 */
+	public function getConsoleBanner ( AdapterInterface $console ) {
+
+		return self::BANNER;
+	}
+
+	/**
+	 * Expected to return \Zend\ServiceManager\Config object or array to
+	 * seed such an object.
+	 *
+	 * @return array|\Zend\ServiceManager\Config
 	 */
 	public function getViewHelperConfig () {
 		return [
 			'invokables' => [
 				'socket' => '\\View\Helper\Socket',
-			],
+			]
 		];
 	}
-
-	/**
-	 * getServiceConfig() method of loading services
-	 *
-	 * @return array
-	 */
-	public function getServiceConfig () {
-		return [ ];
-	}
-
-
 }
