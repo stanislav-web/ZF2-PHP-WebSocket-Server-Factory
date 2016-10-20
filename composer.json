@@ -3,9 +3,7 @@
   "description": "ZF2 PHP WebSocket Server Factory (Extended)",
   "version": "3.2.1",
   "type": "library",
-  "config": {
-    "bin-dir": "./vendor/bin"
-  },
+  "bin": ["./vendor/bin/ws.php"],
   "extra": {
     "branch-alias": {
       "dev-master": "ZF3-dev"
