@@ -8,7 +8,7 @@
   },
   "extra": {
     "branch-alias": {
-      "dev-master": "dev-ZF3"
+      "dev-master": "ZF3-dev"
     }
   },
   "keywords": [
