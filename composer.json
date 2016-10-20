@@ -6,7 +6,7 @@
   "bin": ["./vendor/bin/ws.php"],
   "extra": {
     "branch-alias": {
-      "dev-master": "ZF3-dev"
+      "dev-master": "3.2.1-dev"
     }
   },
   "keywords": [
