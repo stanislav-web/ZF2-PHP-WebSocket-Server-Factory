@@ -1,8 +1,16 @@
 {
-  "name": "jasonrgd/zf2-websocket-server-factory",
-  "description": "ZF2 PHP WebSocket Server Factory v3.1 (Extended)",
+  "name": "stanislav-web/zf2-websocket-server-factory",
+  "description": "ZF2 PHP WebSocket Server Factory (Extended)",
+  "version": "3.2.1",
   "type": "library",
-  "bin": ["bin/ws.php"],
+  "config": {
+    "bin-dir": "./vendor/bin"
+  },
+  "extra": {
+    "branch-alias": {
+      "dev-master": "dev-ZF3"
+    }
+  },
   "keywords": [
     "zf3",
     "websockets",
@@ -29,7 +37,8 @@
   "require": {
     "php": ">=5.6",
     "zfcampus/zf-console": "^1.3",
-    "zendframework/zend-console" : "^2.6"
+    "zendframework/zend-console" : "^2.6",
+    "zend-json" : "^3.0"
   },
   "autoload": {
     "psr-4": {

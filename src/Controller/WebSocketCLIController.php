@@ -20,7 +20,6 @@ class WebsocketCLIController extends AbstractActionController {
 
 
 	public function versionAction () {
-		die('ASASASAS');
 	}
 
 	/**
