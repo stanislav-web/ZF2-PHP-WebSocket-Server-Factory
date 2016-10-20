@@ -19,6 +19,10 @@ use WebSockets\Exception;
 class WebsocketCLIController extends AbstractActionController {
 
 
+	public function versionAction () {
+		die('ASASASAS');
+	}
+
 	/**
 	 * systemAction() System command
 	 * @access public
