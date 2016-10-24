@@ -27,15 +27,7 @@ interface ApplicationInterface {
 	public function __construct ( ServerInterface $serverInstance, AdapterInterface $consoleInstance );
 
 	/**
-	 * Start server
-	 *
-	 * @uses \WebSockets\Service\WebsocketServer to retrieve Server instance
-	 * @return bool
-	 */
-	public function onStart ();
-
-	/**
-	 * Opening a connection to the server
+	 * Opening a connection to the server event
 	 *
 	 * @param int $clientId connection identifier
 	 *
@@ -45,7 +37,7 @@ interface ApplicationInterface {
 	public function onOpen ( $clientId );
 
 	/**
-	 * Send responses from server
+	 * Send responses from server event
 	 *
 	 * @param int    $clientId connection identifier
 	 * @param string $message  server message
@@ -56,7 +48,7 @@ interface ApplicationInterface {
 	public function onMessage ( $clientId, $message );
 
 	/**
-	 * Closing connection
+	 * Closing connection event
 	 *
 	 * @param int $clientId connection identifier
 	 *
@@ -64,4 +56,10 @@ interface ApplicationInterface {
 	 * @return void
 	 */
 	public function onClose ( $clientId );
+
+	/**
+	 * Run application
+	 * @return void
+	 */
+	public function run();
 }

@@ -20,10 +20,10 @@ return [
 	'charset'                  => 'utf-8',
 
 	// Use messages logger
-	'log'                      => false,
+	'log'                      => true,
 
 	// Logfile path
-	'logfile'                  => 'logs/socket/actions.log',
+	'logfile'                  => 'logs/websocket/actions.log',
 
 	// Maximum amount of clients that can be connected at one time
 	'max_clients'              => 10,

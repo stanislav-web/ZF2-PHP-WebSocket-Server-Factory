@@ -26,7 +26,6 @@ class Open {
 	public static function run ( Route $route, AdapterInterface $console ) {
 
 		$param = $route->getMatchedParam ( "app" );
-		/* @var \Zend\ServiceManager\ServiceLocatorInterface $serviceLocator */
 		$serviceLocator = $param['serviceLocator'];
 
 		try {
@@ -37,14 +36,14 @@ class Open {
 
 			// bind listeners
 			$application->bind ( 'open', 'onOpen' );
-			$application->bind ( 'message', 'onMessage' );
-			$application->bind ( 'close', 'onClose' );
+			//$application->bind ( 'message', 'onMessage' );
+			//$application->bind ( 'close', 'onClose' );
 
 			// running server
 			$application->run ();
 
 		} catch ( \Exception $e ) {
-			echo $e->getMessage ();
+			throw new \Exception($e->getMessage ());
 		}
 	}
 }

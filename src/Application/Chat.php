@@ -35,7 +35,7 @@ class Chat implements ApplicationInterface {
 
 	/**
 	 * ApplicationInterface constructor.
-	 * Server implementation
+	 * Bind server for this application
 	 *
 	 * @param ServerInterface  $serverInstance
 	 * @param AdapterInterface $consoleInstance
@@ -49,21 +49,11 @@ class Chat implements ApplicationInterface {
 			$this->consoleInstance = $consoleInstance;
 		}
 
-		$this->message('System: Wellcome to ' . (new \ReflectionClass($this))->getShortName());
+		$this->message('[SYSTEM]: Wellcome to ' . (new \ReflectionClass($this))->getShortName());
 	}
 
 	/**
-	 * Start server
-	 *
-	 * @uses \WebSockets\Service\WebsocketServer to retrieve Server instance
-	 * @return bool
-	 */
-	public function onStart () {
-		// TODO: Implement onStart() method.
-	}
-
-	/**
-	 * Opening a connection to the server
+	 * Opening a connection to the server event
 	 *
 	 * @param int $clientId connection identifier
 	 *
@@ -75,7 +65,7 @@ class Chat implements ApplicationInterface {
 	}
 
 	/**
-	 * Send responses from server
+	 * Send responses from server event
 	 *
 	 * @param int    $clientId connection identifier
 	 * @param string $message  server message
@@ -88,7 +78,7 @@ class Chat implements ApplicationInterface {
 	}
 
 	/**
-	 * Closing connection
+	 * Closing connection event
 	 *
 	 * @param int $clientId connection identifier
 	 *
@@ -97,6 +87,16 @@ class Chat implements ApplicationInterface {
 	 */
 	public function onClose ( $clientId ) {
 		// TODO: Implement onClose() method.
+	}
+
+
+	/**
+	 * Run application
+	 *
+	 * @return boolean
+	 */
+	public function run() {
+		return $this->serverInstance->start();
 	}
 
 	/**

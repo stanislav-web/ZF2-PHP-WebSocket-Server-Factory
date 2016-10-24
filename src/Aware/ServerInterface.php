@@ -21,4 +21,11 @@ interface ServerInterface {
 	 * @return \StdClass
 	 */
 	public function getConfig();
+
+	/**
+	 * Start server
+	 * 
+	 * @return boolean
+	 */
+	public function start();
 }

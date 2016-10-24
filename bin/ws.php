@@ -20,7 +20,6 @@ $meta = file_get_contents ( __DIR__ . '/../composer.json' );
 $meta = Json::decode ( $meta );
 $serviceManager = new ServiceManager();
 $serviceManager->setService('Config', $config);
-
 $application = new Application(
 	$meta->description,
 	$meta->version,
@@ -28,6 +27,7 @@ $application = new Application(
 	Console::getInstance (),
 	new Dispatcher($serviceManager)
 );
+$application->setDebug($config['debug']);
 $application->setBanner("
 ____    __    ____   _______. _______ 
 \   \  /  \  /   /  /       ||   ____|

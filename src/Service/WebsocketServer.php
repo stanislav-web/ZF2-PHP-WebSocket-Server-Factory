@@ -2,14 +2,18 @@
 namespace WebSockets\Service;
 
 use WebSockets\Aware\ServerInterface;
-use WebSockets\Status\WebSocketFrameCode as Frame;
-use WebSockets\Exception;
-use Zend\Ldap\Ldif\Encoder;
-use Zend\Debug\Debug;
 use Zend\Console\Console;
+use WebSockets\Status\WinSocketErrors;
+use WebSockets\Status\UnixSocketErrors;
+use Zend\Log\Logger;
+
+//use WebSockets\Status\WebSocketFrameCode as Frame;
+//use WebSockets\Exception;
+//use Zend\Ldap\Ldif\Encoder;
+//use Zend\Debug\Debug;
 
 /**
- * Class WebsocketServer.
+ * Class WebsocketServer
  * PHP Websocket Server
  *
  * @package    WebSockets\Service
@@ -20,14 +24,33 @@ use Zend\Console\Console;
  * @license    Zend Framework GUI license (New BSD License)
  * @filesource /vendor/stanislav-web/zf2-websocket-server-factory/src/Service/WebsocketServer.php
  */
-class WebsocketServer extends Console implements ServerInterface 
+class WebsocketServer implements ServerInterface
 {
     /**
      * Server configuration
      *
      * @var  \StdClass $config
      */
-    public $config;
+    private $config;
+
+	/**
+	 * @var Console $console
+	 */
+	private $console;
+
+	/**
+	 * Logger
+	 * @var  Logger $logger
+	 */
+	private $logger;
+
+	/**
+	 * Error messages container
+	 *
+	 * @var  array $errorMessages
+	 */
+	private $errors = [];
+
 
 
 
@@ -38,19 +61,7 @@ class WebsocketServer extends Console implements ServerInterface
      */
     protected $_callback = null;
 
-    /**
-     * $error error response
-     * @access static
-     * @var  object WinSocketErrors | UnixSocketErrors
-     */
-    static $error = null;
 
-    /**
-     * $_logger Log object
-     * @access protected
-     * @var  \Zend\Log\Logger $_logger
-     */
-    protected $_logger = null;
 
     /**
      * $log Log state
@@ -94,47 +105,37 @@ class WebsocketServer extends Console implements ServerInterface
      */
     protected $_onEvents = [];
 
-    /**
-     * __construct(array $config) basic connect to primary socket
-     * @param array $config @see module.config.php
-     * @access public
-     * @return boolean
-     * @throws Exception\ExceptionStrategy
-     */
-    public function __construct(array $config)
+	/**
+	 * WebsocketServer constructor.
+	 * Bind server configuration
+	 *
+	 * @param Console $console
+	 * @param \StdClass $config
+	 *
+	 * @throws \RuntimeException
+	 */
+    public function __construct(Console $console, \StdClass $config)
     {
-        if (empty($config)) throw new Exception\ExceptionStrategy('Required parameters are incorrupted!');
-        $this->config = (object)$config;
+        $this->config = $config;
+	    $this->console = $console;
 
-        // pre define response server errors
+	    try {
 
-        if (true === $this->isWindows())
-            self::$error = new \WebSockets\Status\WinSocketErrors();
+		    $this->setErrorMessagesContainer();
+		    $this->setLogger();
 
-        else
-            self::$error = new \WebSockets\Status\UnixSocketErrors();
+		    $this->console("Running server...");
 
-        // check if loging service is available
-        if (true === $this->config->log) {
-            // add log writer
-            if (null === $this->_logger) {
-                if (!file_exists($this->config->logfile)) {
-                    throw new Exception\ExceptionStrategy("Error! File {$this->config->logfile} does not exist");
-                }
-                $this->__log = true;
-                $this->_logger = new \Zend\Log\Logger();
-                $this->_logger->addWriter(new \Zend\Log\Writer\Stream($this->config->logfile));
-            }
-        }
+		    // connect and listen primary socket
+		    $this->runSocketListener();
 
-        $this->console("Running server...");
-
-        // connect and listen primary socket
-        $this->__socketListener();
-
-        // throw console log (if enable)
-        $this->console(sprintf("Listening on: %s:%d", $this->config->host, $this->config->port));
-        $this->console(sprintf("Clients: %d / %d", $this->_clientCount, $this->config->max_clients));
+		    // throw console log (if enable)
+		    $this->console(sprintf("Listening on: %s:%d", $this->config->host, $this->config->port));
+		    $this->console(sprintf("Clients: %d / %d", $this->_clientCount, $this->config->max_clients));
+	    }
+	    catch(\RuntimeException $e) {
+		    throw new \RuntimeException($e->getMessage());
+	    }
     }
 
 	/**
@@ -147,11 +148,51 @@ class WebsocketServer extends Console implements ServerInterface
 	}
 
 	/**
+	 * Set logger interface
+	 *
+	 * @return void
+	 */
+	public function setLogger () {
+
+		if (true === $this->config->log) {
+
+			if (true === is_null($this->logger)) {
+
+				if (false === file_exists($this->config->logfile)) {
+
+					if (is_dir(dirname($this->config->logfile)) === false) {
+						mkdir(dirname($this->config->logfile), 0777, true);
+					}
+					file_put_contents($this->config->logfile, '');
+					chmod($this->config->logfile, 0777);
+				}
+				$this->logger = new \Zend\Log\Logger();
+				$this->logger->addWriter(new \Zend\Log\Writer\Stream($this->config->logfile));
+			}
+		}
+	}
+
+	/**
+	 * Set errors messages container
+	 *
+	 * @return void
+	 */
+	private function setErrorMessagesContainer() {
+
+		if (true === $this->console->isWindows()) {
+			$this->errors = new WinSocketErrors();
+		} else {
+			$this->errors = new UnixSocketErrors();
+		}
+	}
+
+
+	/**
      * run() Run connection
      * @access public
      * @return null
      */
-    public function run()
+    public function start()
     {
         // difine here, because socket_select doesn't suppor clear values
         $write = $except = [];
@@ -854,11 +895,11 @@ class WebsocketServer extends Console implements ServerInterface
     }
 
     /**
-     * __socketListener() read primary socket
-     * @access private
+     * Read primary socket
+     *
      * @return boolean
      */
-    private function __socketListener()
+    private function runSocketListener()
     {
         if (isset($this->_read[0])) {
             $this->console("Failed. Server gone away ((");
