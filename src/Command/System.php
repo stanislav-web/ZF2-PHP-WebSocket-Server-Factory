@@ -15,8 +15,19 @@ use Zend\Console\Adapter\AdapterInterface;
  * @filesource  /vendor/stanislav-web/zf2-websocket-server-factory/src/Command/System.php
  */
 class System {
+
+	/**
+	 * Point of entering commands
+	 *
+	 * @param Route            $route
+	 * @param AdapterInterface $console
+	 */
 	public static function run ( Route $route, AdapterInterface $console ) {
-		$name = $route->getMatchedParam ( "name", "@gianarb" );
-		$console->writeLine ( "Hi {$name}, you have call me. Now this is an awesome day!" );
+
+		$param = $route->getMatchedParam ( "option", "php -v" );
+		$console->writeLine(
+			$console->colorize(exec ( $param, $val ), \Zend\Console\ColorInterface::BLUE)
+		);
+		$console->writeLine('');
 	}
 }

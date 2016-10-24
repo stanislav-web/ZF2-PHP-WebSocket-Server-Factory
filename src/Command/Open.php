@@ -3,6 +3,7 @@ namespace WebSockets\Command;
 
 use ZF\Console\Route;
 use Zend\Console\Adapter\AdapterInterface;
+use WebSockets\Factory\ApplicationFactory;
 
 /**
  * Class Open
@@ -15,8 +16,35 @@ use Zend\Console\Adapter\AdapterInterface;
  * @filesource  /vendor/stanislav-web/zf2-websocket-server-factory/src/Command/Open.php
  */
 class Open {
+
+	/**
+	 * Point of entering commands
+	 *
+	 * @param Route            $route
+	 * @param AdapterInterface $console
+	 */
 	public static function run ( Route $route, AdapterInterface $console ) {
-		$name = $route->getMatchedParam ( "name", "@gianarb" );
-		$console->writeLine ( "Hi {$name}, you have call me. Now this is an awesome day!" );
+
+		$param = $route->getMatchedParam ( "app" );
+		/* @var \Zend\ServiceManager\ServiceLocatorInterface $serviceLocator */
+		$serviceLocator = $param['serviceLocator'];
+
+		try {
+
+			// get factory container
+			$application = new ApplicationFactory( $serviceLocator, $console );
+			$application = $application->dispatch ( $param['client'] );
+
+			// bind listeners
+			$application->bind ( 'open', 'onOpen' );
+			$application->bind ( 'message', 'onMessage' );
+			$application->bind ( 'close', 'onClose' );
+
+			// running server
+			$application->run ();
+
+		} catch ( \Exception $e ) {
+			echo $e->getMessage ();
+		}
 	}
 }

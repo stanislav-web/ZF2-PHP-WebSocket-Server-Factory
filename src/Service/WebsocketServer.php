@@ -1,6 +1,7 @@
 <?php
-namespace WebSockets\Service; // Namespaces of current service
+namespace WebSockets\Service;
 
+use WebSockets\Aware\ServerInterface;
 use WebSockets\Status\WebSocketFrameCode as Frame;
 use WebSockets\Exception;
 use Zend\Ldap\Ldif\Encoder;
@@ -8,26 +9,27 @@ use Zend\Debug\Debug;
 use Zend\Console\Console;
 
 /**
- * Server for WebSocket's protocol connection
- * @package Zend Framework 2
- * @subpackage WebSockets
- * @since PHP >=5.4
- * @version 1.0
- * @author Stanislav WEB | Lugansk <stanisov@gmail.com>
- * @copyright Stanislav WEB
- * @license Zend Framework GUI license
- * @filesource /vendor/Websocket/src/Websocket/Service/WebsocketServer.php
+ * Class WebsocketServer.
+ * PHP Websocket Server
+ *
+ * @package    WebSockets\Service
+ * @since      PHP >=5.6
+ * @version    v3.2.1
+ * @author     Stanislav WEB | Lugansk <stanisov@gmail.com>
+ * @copyright  Stanislav WEB
+ * @license    Zend Framework GUI license (New BSD License)
+ * @filesource /vendor/stanislav-web/zf2-websocket-server-factory/src/Service/WebsocketServer.php
  */
-class WebsocketServer extends Console
+class WebsocketServer extends Console implements ServerInterface 
 {
-
     /**
-     * $config Server configuration
-     * @see module.config.php
-     * @access protected
-     * @var  array
+     * Server configuration
+     *
+     * @var  \StdClass $config
      */
-    public $config = null;
+    public $config;
+
+
 
     /**
      * $_callback Callback object from application. Hello, i'll be here :-)
@@ -102,7 +104,7 @@ class WebsocketServer extends Console
     public function __construct(array $config)
     {
         if (empty($config)) throw new Exception\ExceptionStrategy('Required parameters are incorrupted!');
-        $this->config = $config;
+        $this->config = (object)$config;
 
         // pre define response server errors
 
@@ -113,15 +115,15 @@ class WebsocketServer extends Console
             self::$error = new \WebSockets\Status\UnixSocketErrors();
 
         // check if loging service is available
-        if (true === $this->config['log']) {
+        if (true === $this->config->log) {
             // add log writer
             if (null === $this->_logger) {
-                if (!file_exists($this->config['logfile'])) {
-                    throw new Exception\ExceptionStrategy("Error! File {$this->config['logfile']} does not exist");
+                if (!file_exists($this->config->logfile)) {
+                    throw new Exception\ExceptionStrategy("Error! File {$this->config->logfile} does not exist");
                 }
                 $this->__log = true;
                 $this->_logger = new \Zend\Log\Logger();
-                $this->_logger->addWriter(new \Zend\Log\Writer\Stream($this->config['logfile']));
+                $this->_logger->addWriter(new \Zend\Log\Writer\Stream($this->config->logfile));
             }
         }
 
@@ -131,11 +133,20 @@ class WebsocketServer extends Console
         $this->__socketListener();
 
         // throw console log (if enable)
-        $this->console(sprintf("Listening on: %s:%d", $this->config['host'], $this->config['port']));
-        $this->console(sprintf("Clients: %d / %d", $this->_clientCount, $this->config['max_clients']));
+        $this->console(sprintf("Listening on: %s:%d", $this->config->host, $this->config->port));
+        $this->console(sprintf("Clients: %d / %d", $this->_clientCount, $this->config->max_clients));
     }
 
-    /**
+	/**
+	 * Get configurations
+	 *
+	 * @return array
+	 */
+	public function getConfig () {
+		return $this->config;
+	}
+
+	/**
      * run() Run connection
      * @access public
      * @return null
@@ -869,13 +880,13 @@ class WebsocketServer extends Console
         }
 
         //bind socket to specified host
-        if (false === (socket_bind($this->_read[0], $this->config['host'], $this->config['port']))) {
+        if (false === (socket_bind($this->_read[0], $this->config->host, $this->config->port))) {
             $this->console($this->__errorTpl("socket_bind", socket_last_error(), self::$error->get(socket_last_error($this->_read[0]))), true);
             $this->shutdown();
         }
 
         //bind socket to specified host
-        if (false === (socket_listen($this->_read[0], $this->config['max_clients']))) {
+        if (false === (socket_listen($this->_read[0], $this->config->max_clients))) {
             $this->console($this->__errorTpl("socket_listen", socket_last_error(), self::$error->get(socket_last_error($this->_read[0]))), true);
             $this->shutdown();
         }
@@ -958,12 +969,12 @@ class WebsocketServer extends Console
     public function console($data, $exception = false, $exit = false)
     {
         // check if console is usable
-        if (true === $this->config['debug']) {
+        if (true === $this->config->debug) {
             if (is_array($data) || is_object($data)) {
                 Debug::dump($data . '', date('[Y-m-d H:i:s]') . ' [DEBUG]');
                 if (isset($this->__log)) $this->_logger->info($data);
             } else {
-                if (!is_resource($data)) $data = mb_convert_encoding($data, $this->config['encoding']);
+                if (!is_resource($data)) $data = mb_convert_encoding($data, $this->config->charset);
                 $text = date('[Y-m-d H:i:s]') . '[DEBUG] ' . $data . "\r\n";
                 if ($exception) {
                     if ($this->__log) $this->_logger->crit($text);

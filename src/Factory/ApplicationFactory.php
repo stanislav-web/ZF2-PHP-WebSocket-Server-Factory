@@ -1,71 +1,68 @@
 <?php
 namespace WebSockets\Factory;
 
-use WebSockets\Exception;
+use WebSockets\Aware\ApplicationInterface;
+use Zend\Console\Adapter\AdapterInterface;
+use Zend\ServiceManager\ServiceLocatorInterface;
 use WebSockets\Service\WebsocketServer;
-use Zend\ServiceManager\ServiceLocatorAwareInterface;
 
 /**
- * ApplicationFactory. Use this factory for get some client applications
- * @package Zend Framework 2
- * @subpackage WebSockets
- * @since PHP >=5.4
- * @version 1.0
- * @author Stanislav WEB | Lugansk <stanisov@gmail.com>
- * @copyright Stanislav WEB
- * @license Zend Framework GUI license
- * @filesource /vendor/WebSockets/src/WebSockets/Factory/ApplicationFactory.php
+ * Class ApplicationFactory.
+ * Use this factory for get client applications
+ *
+ * @package    WebSockets\Factory
+ * @since      PHP >=5.6
+ * @version    v3.2.1
+ * @author     Stanislav WEB | Lugansk <stanisov@gmail.com>
+ * @copyright  Stanislav WEB
+ * @license    Zend Framework GUI license (New BSD License)
+ * @filesource /vendor/stanislav-web/zf2-websocket-server-factory/src/Factory/ApplicationFactory.php
  */
-class ApplicationFactory
-{
+class ApplicationFactory {
 
-    /**
-     * Service Manager
-     *
-     * @var \Zend\ServiceManager\ServiceManager $serviceManager
-     */
-    private $serviceManager;
+	/**
+	 * Service locator
+	 *
+	 * @var ServiceLocatorInterface $serviceLocator
+	 */
+	private $serviceLocator;
 
-    /**
-     * Setup service manager
-     *
-     * @param \Zend\ServiceManager\ServiceManager $serviceManager
-     */
-    public function __construct(\Zend\ServiceManager\ServiceManager $serviceManager)
-    {
-        $this->serviceManager = $serviceManager;
-    }
+	/**
+	 * Console adapter
+	 *
+	 * @var ServiceLocatorInterface $consoleAdapter
+	 */
+	private $consoleAdapter;
 
-    /**
-     * dispatch($app) Get produced application object
-     *
-     * @param string $app application object
-     *
-     * @return \WebSockets\Application\  object
-     * @throws Exception\ExceptionStrategy
-     */
-    public function dispatch($app)
-    {
-        // need to provide dynamic objects creations 
+	/**
+	 * ApplicationFactory constructor.
+	 *
+	 * @param ServiceLocatorInterface $serviceLocator
+	 * @param AdapterInterface        $consoleAdapter
+	 */
+	public function __construct ( ServiceLocatorInterface $serviceLocator, AdapterInterface $consoleAdapter ) {
+		$this->serviceLocator = $serviceLocator;
+		$this->consoleAdapter = $consoleAdapter;
+	}
 
-        //Get namespaces for application
-        $config     = $this->serviceManager->get('Config');
-        $namespaces = $config['websockets']['server']['applications_namespace'];
+	/**
+	 * Dispatch client application
+	 *
+	 * @param string $clientClassName
+	 *
+	 * @return ApplicationInterface
+	 * @throws \Exception
+	 */
+	public function dispatch ( $clientClassName ) {
 
-        foreach ($namespaces as $namespace) {
-            // checking class..
-            $Client = "$namespace\\$app";
-            if ( TRUE === class_exists($Client) ) {
-                $obj = new $Client(new WebsocketServer($config['websockets']['server']));
-                //Deprecated
-                if($obj instanceof ServiceLocatorAwareInterface) {
-                    $obj->setServiceLocator($this->serviceManager);
-                }
-            }
-            if ($this->serviceManager->has($Client)) {
-                return $this->serviceManager->get($Client);
-            }
-        }
-        throw new Exception\ExceptionStrategy($app . ' application does not exist');
-    }
+		$config = $this->serviceLocator->get ( 'Config' );
+
+		$obj = new $clientClassName( new WebsocketServer( $config ), $this->consoleAdapter );
+
+		if ( !$obj instanceof ApplicationInterface ) {
+			throw new \RuntimeException( 'This application does not supported by Module interface' );
+		}
+
+		return $obj;
+	}
 }

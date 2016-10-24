@@ -1,6 +1,8 @@
 <?php
 namespace WebSockets\Aware;
 
+use Zend\Console\Adapter\AdapterInterface;
+
 /**
  * Interface ApplicationInterface.
  * The necessary rules for the implementation of customer applications
@@ -14,6 +16,15 @@ namespace WebSockets\Aware;
  * @filesource /vendor/stanislav-web/zf2-websocket-server-factory/src/Aware/ApplicationInterface.php
  */
 interface ApplicationInterface {
+
+	/**
+	 * ApplicationInterface constructor.
+	 * Server implementation
+	 *
+	 * @param ServerInterface  $serverInstance
+	 * @param AdapterInterface $consoleInstance
+	 */
+	public function __construct ( ServerInterface $serverInstance, AdapterInterface $consoleInstance );
 
 	/**
 	 * Start server
