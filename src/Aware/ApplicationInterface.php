@@ -18,6 +18,11 @@ use Zend\Console\Adapter\AdapterInterface;
 interface ApplicationInterface {
 
 	/**
+	 * Socket response IP index
+	 */
+	const SOCKET_RESPONSE_IP = 6;
+
+	/**
 	 * ApplicationInterface constructor.
 	 * Server implementation
 	 *
@@ -48,6 +53,16 @@ interface ApplicationInterface {
 	public function onMessage ( $clientId, $message );
 
 	/**
+	 * Error listener
+	 *
+	 * @param ServerInterface $serverInstance
+	 * @param \Exception      $e
+	 *
+	 * @return void
+	 */
+	public function onError(ServerInterface $serverInstance, \Exception $e);
+
+	/**
 	 * Closing connection event
 	 *
 	 * @param int $clientId connection identifier
@@ -59,6 +74,7 @@ interface ApplicationInterface {
 
 	/**
 	 * Run application
+	 *
 	 * @return void
 	 */
 	public function run();

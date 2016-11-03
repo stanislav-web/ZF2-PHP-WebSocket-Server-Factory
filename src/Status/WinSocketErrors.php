@@ -1,6 +1,8 @@
 <?php
 namespace WebSockets\Status;
 
+use WebSockets\Aware\MessageInterface;
+
 /**
  * Class WinSocketErrors
  * Error codes & messages for Windows
@@ -13,27 +15,12 @@ namespace WebSockets\Status;
  * @license    Zend Framework GUI license (New BSD License)
  * @filesource /vendor/stanislav-web/zf2-websocket-server-factory/src/Status/WinSocketErrors.php
  */
-class WinSocketErrors {
+class WinSocketErrors implements MessageInterface {
 
 	/**
 	 * @const DEFAULT_CODE
 	 */
 	const DEFAULT_CODE = 0;
-
-	/**
-	 * Get error message
-	 *
-	 * @param int $code
-	 *
-	 * @return string
-	 */
-	public static function get ( $code ) {
-		if ( true === array_key_exists ( $code, self::$message ) ) {
-			return self::$message[$code];
-		} else {
-			return self::$message[self::DEFAULT_CODE];
-		}
-	}
 
 	/**
 	 * Error messages container
@@ -141,4 +128,22 @@ A system call that should never fail has failed. This is a generic error code, r
 		'11030' => "Invalid QoS shaping rate object.\nAn invalid shaping rate object was found in the QoS provider-specific buffer.",
 		'11031' => "Reserved policy QoS element type.\nA reserved policy element was found in the QoS provider-specific buffer.",
 	];
+
+	/**
+	 * Print console message
+	 *
+	 * @param int|string $message
+	 * @param boolean $isDebug
+	 * @param int $color
+	 *
+	 * @return string
+	 */
+	public function stdOut ( $message , $isDebug = false, $color = null) {
+
+		if ( true === array_key_exists ( $message, self::$message ) ) {
+			return self::$message[$message];
+		} else {
+			return self::$message[self::DEFAULT_CODE];
+		}
+	}
 }

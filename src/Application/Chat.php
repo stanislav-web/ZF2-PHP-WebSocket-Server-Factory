@@ -49,7 +49,7 @@ class Chat implements ApplicationInterface {
 			$this->consoleInstance = $consoleInstance;
 		}
 
-		$this->message('[SYSTEM]: Wellcome to ' . (new \ReflectionClass($this))->getShortName());
+		$this->message ( '[system]: Wellcome to ' . ( new \ReflectionClass( $this ) )->getShortName () );
 	}
 
 	/**
@@ -61,7 +61,16 @@ class Chat implements ApplicationInterface {
 	 * @return void
 	 */
 	public function onOpen ( $clientId ) {
-		// TODO: Implement onOpen() method.
+
+		$ip = long2ip ( $this->serverInstance->clients[$clientId][self::SOCKET_RESPONSE_IP] );
+
+		// send a join notice to everyone but the person who joined
+		foreach ( $this->serverInstance->clients as $id => $client ) {
+			if ( $id != $clientId ) {
+				// send only not for me :))
+				$this->serverInstance->send ( $id, "User {$clientId} ({$ip}) has joined the room." );
+			}
+		}
 	}
 
 	/**
@@ -74,7 +83,32 @@ class Chat implements ApplicationInterface {
 	 * @return void
 	 */
 	public function onMessage ( $clientId, $message ) {
-		// TODO: Implement onMessage() method.
+
+		// get client ip
+		$ip = long2ip ( $this->serverInstance->clients[$clientId][self::SOCKET_RESPONSE_IP] );
+
+		if ( 0 === strlen ( $message ) ) {
+			// send nothing
+			$this->serverInstance->close ( $clientId );
+
+			return;
+		}
+
+		// the speaker is the only person in the room. Don't let them feel lonely.
+		if ( 1 === sizeof ( $this->serverInstance->clients ) ) {
+			$this->serverInstance->send ( $clientId, "There isn't anyone else in the room, but I'll still listen to you. Some one in the dark :))" );
+		} else {
+			// send the message to everyone but the person who said it
+			foreach ( $this->serverInstance->clients as $id => $client ) {
+				if ( $id != $clientId ) {
+					$this->serverInstance->send ( $id, "User {$clientId} ({$ip}) said \"{$message}\"" );
+				}
+			}
+		}
+	}
+
+	public function onError ( ServerInterface $serverInstance, \Exception $e ) {
+		// TODO: Implement onError() method.
 	}
 
 	/**
@@ -86,17 +120,28 @@ class Chat implements ApplicationInterface {
 	 * @return void
 	 */
 	public function onClose ( $clientId ) {
-		// TODO: Implement onClose() method.
-	}
 
+		// get client ip
+		$ip = long2ip ( $this->serverInstance->clients[$clientId][self::SOCKET_RESPONSE_IP] );
+
+		// send a user left notice to everyone in the room
+		foreach ( $this->serverInstance->clients as $id => $client ) {
+			$this->serverInstance->send ( $id, "User {$clientId} ({$ip}) has left the room." );
+		}
+	}
 
 	/**
 	 * Run application
 	 *
 	 * @return boolean
 	 */
-	public function run() {
-		return $this->serverInstance->start();
+	public function run () {
+		try {
+			return $this->serverInstance->start ();
+		}
+		catch (\Exception $e) {
+			throw new \Exception($e->getMessage());
+		}
 	}
 
 	/**
@@ -107,7 +152,7 @@ class Chat implements ApplicationInterface {
 	 */
 	private function message ( $message, $color = ColorInterface::BLUE ) {
 
-		$message = mb_convert_encoding($message, $this->serverInstance->getConfig()->charset);
+		$message = mb_convert_encoding ( $message, $this->serverInstance->getConfig ()->getCharset() );
 		$this->consoleInstance->writeLine (
 			$this->consoleInstance->colorize ( date ( '[Y-m-d H:i:s] ' ) . $message, $color )
 		);
@@ -120,101 +165,16 @@ class Chat implements ApplicationInterface {
 	 * @param string $arguments
 	 *
 	 * @return mixed
-	 * @throws \RuntimeException
+	 * @throws \Exception
 	 */
-	public function __call($name, $arguments)
-	{
-		if(false === method_exists(get_class($this->serverInstance), $name)) {
-			throw new \RuntimeException("Error! Function {$name} does not exist in ".get_class($this->serverInstance));
+	public function __call ( $name, $arguments ) {
+		if ( false === method_exists ( get_class ( $this->serverInstance ), $name ) ) {
+			throw new \Exception( "Error! Function {$name} does not exist in " . get_class ( $this->serverInstance ) );
 		}
-		if(2 != sizeof($arguments)) {
-			throw new \RuntimeException("Error! Arguments setup incorrectly in ".__CLASS__);
+		if ( 2 != sizeof ( $arguments ) ) {
+			throw new \Exception( "Error! Arguments setup incorrectly in " . __CLASS__ );
 		}
 
-		return $this->serverInstance->$name($arguments[0], $arguments[1], $this);
+		return $this->serverInstance->$name( $arguments[0], $arguments[1], $this );
 	}
-
-	//
-	//    /**
-	//     * onOpen() opening a connection to the server
-	//     * @param int $clientId connect identifier
-	//     * @access public
-	//     */
-	//    public function onOpen($clientId)
-	//    {
-	//	// get client ip
-	//	$ip = long2ip($this->_server->clients[$clientId][6]);
-	//
-	//	// send a join notice to everyone but the person who joined
-	//	foreach($this->_server->clients as $id => $client)
-	//	{
-	//	    if($id != $clientId)
-	//	    {	// send only not  for me :))
-	//		$this->_server->send($id, "User $clientId ($ip) has joined the room.");
-	//	    }
-	//	}
-	//    }
-	//
-	//    /**
-	//     * onMessage($clientId, $message) get messages from server (request / response)
-	//     * @param int $clientId connect identifier
-	//     * @param varchar $message costom message throught socket
-	//     * @access public
-	//     */
-	//    public function onMessage($clientId, $message)
-	//    {
-	//	// get client ip
-	//	$ip = long2ip($this->_server->clients[$clientId][6]);
-	//
-	//	// check if message length is 0
-	//	if(strlen($message) == 0)
-	//	{
-	//	    // send nothing
-	//	    $this->_server->close($clientId);
-	//	    return;
-	//	}
-	//
-	//	// the speaker is the only person in the room. Don't let them feel lonely.
-	//	if(sizeof($this->_server->clients) == 1)
-	//	{
-	//	    $this->_server->send($clientId, "There isn't anyone else in the room, but I'll still listen to you. Some one in the dark :))");
-	//	}
-	//	else
-	//	{
-	//	    // send the message to everyone but the person who said it
-	//	    foreach($this->_server->clients as $id => $client)
-	//	    {
-	//		if($id != $clientId) $this->_server->send($id, "User $clientId ($ip) said \"$message\"");
-	//	    }
-	//	}
-	//    }
-	//
-	//    /**
-	//     * onClose($clientId) closing a connection to the server
-	//     * @param int $clientId connect identifier
-	//     * @access public
-	//     */
-	//    public function onClose($clientId)
-	//    {
-	//	// get client ip
-	//	$ip = long2ip($this->_server->clients[$clientId][6]);
-	//
-	//	// send a user left notice to everyone in the room
-	//	foreach($this->_server->clients as $id => $client)
-	//	{
-	//	    $this->_server->send($id, "User $clientId ($ip) has left the room.");
-	//	}
-	//    }
-	//
-	//
-
-	//
-	//    /**
-	//     * run() running application
-	//     * @access public
-	//     */
-	//    public function run()
-	//    {
-	//	return $this->_server->run();
-	//    }
 }

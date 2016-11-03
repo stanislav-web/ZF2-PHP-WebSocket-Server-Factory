@@ -4,8 +4,12 @@ namespace WebSockets\Factory;
 use Zend\Console\Adapter\AdapterInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
 use WebSockets\Aware\ApplicationInterface;
-use WebSockets\Service\WebsocketServer;
-use WebSockets\Service\ConsoleBridge;
+use WebSockets\Service\Logger\Logger;
+use WebSockets\Service\Console;
+use WebSockets\Service\Server;
+use WebSockets\Service\Socket;
+use WebSockets\Service\Config;
+use WebSockets\Service\Clients;
 
 /**
  * Class ApplicationFactory.
@@ -52,24 +56,37 @@ class ApplicationFactory {
 	 * @param string $clientClassName
 	 *
 	 * @return ApplicationInterface
-	 * @throws \RuntimeException
+	 * @throws \Exception
 	 */
 	public function dispatch ( $clientClassName ) {
 
-		$config = (object) $this->serviceLocator->get ( 'Config' );
+		$config = $this->serviceLocator->get ( 'Config' );
 
 		try {
+			$consoleInstance = new Console();
+			$socketInstance = new Socket($consoleInstance);
+			$configInstance = new Config( $config );
+			$loggerInstance = new Logger();
+			$clientStorageInstance = new Clients();
+
 			$obj = new $clientClassName(
-				new WebsocketServer( new ConsoleBridge(), $config ),
+				new Server(
+					$socketInstance,
+					$consoleInstance,
+					$configInstance,
+					$loggerInstance,
+					$clientStorageInstance
+				),
 				$this->consoleAdapter
 			);
 			if ( !$obj instanceof ApplicationInterface ) {
-				throw new \RuntimeException( 'This application does not supported by Module interface' );
+				throw new \Exception( 'This application does not supported by Module interface' );
 			}
 
 			return $obj;
-		} catch ( \RuntimeException $e ) {
+		} catch ( \Exception $e ) {
 			throw new \Exception( $e->getMessage () );
 		}
 	}
+
 }

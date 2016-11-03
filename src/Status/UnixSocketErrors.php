@@ -1,6 +1,8 @@
 <?php
 namespace WebSockets\Status;
 
+use WebSockets\Aware\MessageInterface;
+
 /**
  * Class UnixSocketErrors
  * Error codes & messages for Unix
@@ -13,27 +15,12 @@ namespace WebSockets\Status;
  * @license    Zend Framework GUI license (New BSD License)
  * @filesource /vendor/stanislav-web/zf2-websocket-server-factory/src/Status/UnixSocketErrors.php
  */
-class UnixSocketErrors {
+class UnixSocketErrors implements MessageInterface {
 
 	/**
 	 * @const DEFAULT_CODE
 	 */
 	const DEFAULT_CODE = 58;
-
-	/**
-	 * Get error message
-	 *
-	 * @param int $code
-	 *
-	 * @return string
-	 */
-	public static function get ( $code ) {
-		if ( true === array_key_exists ( $code, self::$message ) ) {
-			return self::$message[$code];
-		} else {
-			return self::$message[self::DEFAULT_CODE];
-		}
-	}
 
 	/**
 	 * Error messages container
@@ -174,4 +161,22 @@ class UnixSocketErrors {
 		'130' => "Owner died",
 		'131' => "State not recoverable",
 	];
+
+	/**
+	 * Print console message
+	 *
+	 * @param int|string $message
+	 * @param boolean $isDebug
+	 * @param int $color
+	 *
+	 * @return string
+	 */
+	public function stdOut ( $message , $isDebug = false, $color = null) {
+
+		if ( true === array_key_exists ( $message, self::$message ) ) {
+			return self::$message[$message];
+		} else {
+			return self::$message[self::DEFAULT_CODE];
+		}
+	}
 }

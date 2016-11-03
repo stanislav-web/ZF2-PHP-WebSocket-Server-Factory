@@ -1,6 +1,8 @@
 <?php
 namespace WebSockets\Aware;
 
+use Psr\Log\LoggerAwareInterface;
+
 /**
  * Interface ServerInterface.
  * The necessary rules for the implementation new server
@@ -16,11 +18,49 @@ namespace WebSockets\Aware;
 interface ServerInterface {
 
 	/**
-	 * Get configurations
+	 * Get server configurations
 	 *
-	 * @return \StdClass
+	 * @return ConfigInterface
 	 */
 	public function getConfig();
+
+	/**
+	 * Get console
+	 *
+	 * @return ConsoleInterface
+	 */
+	public function getConsole();
+
+	/**
+	 * Get socket
+	 *
+	 * @return SocketInterface
+	 */
+	public function getSocket();
+
+	/**
+	 * Set messager interface
+	 *
+	 * @param LoggerAwareInterface $loggerInstance
+	 * @return ServerInterface
+	 */
+	public function setMessager (LoggerAwareInterface $loggerInstance);
+
+	/**
+	 * Set logger interface
+	 *
+	 * @param LoggerAwareInterface $loggerInstance
+	 * @return ServerInterface
+	 */
+	public function setLogger (LoggerAwareInterface $loggerInstance);
+
+	/**
+	 * Set debug interface
+	 *
+	 * @param LoggerAwareInterface $loggerInstance
+	 * @return ServerInterface
+	 */
+	public function setDebugger (LoggerAwareInterface $loggerInstance);
 
 	/**
 	 * Start server
@@ -28,4 +68,11 @@ interface ServerInterface {
 	 * @return boolean
 	 */
 	public function start();
+
+	/**
+	 * Shutdown server
+	 *
+	 * @return void
+	 */
+	public function shutdown();
 }
